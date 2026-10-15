@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 cask "blackhole-wallpaper" do
   version "1.0.0"
   sha256 "7d6faab019c677a1af005618ecd6fc72050cf8ed19072c68cc11e527f17570ed"
@@ -7,12 +9,10 @@ cask "blackhole-wallpaper" do
   desc "Live black hole desktop wallpaper and screen saver with real light bending"
   homepage "https://digitaliq.github.io/blackhole-wallpaper/"
 
-  # The app checks GitHub for updates. Installed with Homebrew it does not replace itself,
-  # it tells the user to run: brew upgrade --cask blackhole-wallpaper
-  auto_updates true
-
-  depends_on macos: ">= :sequoia"
+  # Installed with Homebrew, the app does not replace itself. It points to brew upgrade instead,
+  # so auto_updates stays off and a plain `brew upgrade` picks up new versions.
   depends_on arch: :arm64
+  depends_on macos: ">= :sequoia"
 
   app "BlackHoleWallpaper.app"
   screen_saver "Schwarzes Loch.saver"
