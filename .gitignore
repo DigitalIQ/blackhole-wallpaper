@@ -1,0 +1,9 @@
+.build/
+build/
+shots/
+.DS_Store
+.tmp/
+Design/Icon/work/
+Design/Icon/AppIcon.iconset/
+.claude/skills/website-bauen/
+.claude/skills/impeccable/

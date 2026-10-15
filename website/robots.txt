@@ -1,0 +1,7 @@
+# Black Hole Wallpaper. Suchmaschinen und KI-Assistenten sind willkommen.
+# Hinweis: Auf GitHub Pages ohne eigene Domain liest ein Crawler nur
+# https://digitaliq.github.io/robots.txt. Diese Datei wirkt erst mit eigener Domain.
+User-agent: *
+Allow: /
+
+Sitemap: https://digitaliq.github.io/blackhole-wallpaper/sitemap.xml

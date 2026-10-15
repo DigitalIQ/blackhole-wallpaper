@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Black Hole Wallpaper: a live black hole for your Mac</title>
+<meta name="description" content="Free, open source animated wallpaper for macOS. A spinning black hole with real light bending, computed in Metal. Download it or install with Homebrew.">
+<link rel="icon" href="../shared/img/icon-256.png">
+<style>
+@font-face { font-family: "Bricolage"; src: url(../shared/fonts/bricolage-grotesque-latin-standard-normal.woff2) format("woff2-variations"); font-weight: 200 800; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: "Hanken"; src: url(../shared/fonts/hanken-grotesk-latin-wght-normal.woff2) format("woff2-variations"); font-weight: 100 900; font-display: swap; }
+:root {
+  --void: #07040D;
+  --text: #F4EEF6;
+  --text-2: #CDBFDA;     /* 11:1 auf --void */
+  --hot: #FFE0A0;        /* innerste Scheibe */
+  --orange: #FF7A1F; --mag: #D23A78; --violet: #6A1B7A; --cyan: #2FC6D8; --blue: #3A4DD8;
+  --bar: rgba(10, 6, 18, .55);
+  --gut: clamp(16px, 3.4vw, 48px);
+}
+* { box-sizing: border-box; margin: 0; }
+html { background: var(--void); color: var(--text); font-family: "Hanken", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--mag); color: #fff; }
+a { color: inherit; text-underline-offset: .22em; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
+
+/* Der erste Bildschirm ist ein Schreibtisch: oben eine Menüleiste, unten ein Dock, dazwischen das Loch */
+.desk { position: relative; height: 100svh; min-height: 620px; overflow: hidden; isolation: isolate; }
+.sky { position: absolute; inset: 0; z-index: -1; }
+.sky img, .sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.sky.is-live img { visibility: hidden; }
+.sky::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(7,4,13,.78) 0%, rgba(7,4,13,.35) 38%, rgba(7,4,13,0) 60%); pointer-events: none; }
+
+/* Leuchtende Bänder wie in der App: dünn, fließend */
+.band { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--orange) 12%, var(--mag) 30%, var(--hot) 46%, var(--cyan) 62%, var(--blue) 78%, var(--orange) 92%, transparent); background-size: 200% 100%; animation: flow 14s linear infinite; filter: drop-shadow(0 0 6px rgba(255,122,31,.65)) drop-shadow(0 0 14px rgba(210,58,120,.45)); }
+@keyframes flow { to { background-position: -200% 0; } }
+
+.menubar { position: absolute; top: 0; left: 0; right: 0; height: 34px; display: flex; align-items: center; gap: 22px; padding: 0 var(--gut); background: var(--bar); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); font-size: 13.5px; font-weight: 500; }
+.menubar .band { top: 34px; }
+.menubar b { font-weight: 700; }
+.menubar a { text-decoration: none; color: var(--text-2); }
+.menubar a:hover { color: var(--text); }
+.menubar .right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.menubar .tray { width: 18px; height: 18px; filter: invert(1); opacity: .92; }
+
+.stage { position: absolute; left: var(--gut); bottom: 170px; max-width: min(640px, 48vw); }
+h1 { font-family: "Bricolage", sans-serif; font-weight: 700; font-stretch: 84%; font-size: clamp(44px, 6vw, 96px); line-height: .92; letter-spacing: -.035em; text-wrap: balance; }
+.lede { margin-top: 22px; font-size: clamp(17px, 1.35vw, 20px); line-height: 1.5; color: var(--text-2); max-width: 40ch; }
+.tilt { margin-top: 18px; font-size: 13px; color: var(--text-2); display: flex; gap: 8px; align-items: center; }
+.tilt svg { width: 16px; height: 16px; }
+
+/* Das Dock trägt die Handlung */
+.dock { position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 22px; background: rgba(18, 11, 30, .62); backdrop-filter: blur(22px) saturate(1.5); -webkit-backdrop-filter: blur(22px) saturate(1.5); box-shadow: 0 14px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(244,238,246,.12); }
+.dock .band { position: absolute; left: 18px; right: 18px; bottom: -14px; top: auto; }
+.dock img { width: 52px; height: 52px; border-radius: 12px; display: block; }
+.get { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px; border-radius: 14px; background: var(--hot); color: #1A0633; font-weight: 700; font-size: 16px; text-decoration: none; white-space: nowrap; }
+.get:hover { background: #fff2d6; }
+.get svg { width: 18px; height: 18px; }
+.brew { height: 52px; display: inline-flex; align-items: center; gap: 12px; padding: 0 16px; border-radius: 14px; border: 0; background: rgba(244,238,246,.08); color: var(--text); font: 500 13px ui-monospace, "SF Mono", Menlo, monospace; cursor: pointer; white-space: nowrap; }
+.brew:hover { background: rgba(244,238,246,.16); }
+.brew .cmd { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.brew .k { font: 600 12px "Hanken"; color: var(--cyan); }
+.fine { position: absolute; left: 50%; bottom: 10px; transform: translate(-50%, 0); font-size: 12px; color: var(--text-2); white-space: nowrap; padding-bottom: 2px; }
+
+@media (max-width: 860px) {
+  .menubar { gap: 14px; }
+  .menubar .hide-s { display: none; }
+  .sky { bottom: auto; height: 62%; }
+  .sky::after { background: linear-gradient(180deg, rgba(7,4,13,0) 55%, var(--void) 100%); }
+  .stage { left: var(--gut); right: var(--gut); top: 56%; bottom: auto; max-width: none; }
+  h1 { font-size: clamp(40px, 11.5vw, 54px); }
+  .lede { margin-top: 14px; font-size: 16.5px; }
+  .tilt { display: none; }
+  .dock { left: var(--gut); right: var(--gut); transform: none; bottom: calc(16px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 44px 1fr; gap: 8px; }
+  .dock img { width: 44px; height: 44px; }
+  .get { height: 44px; justify-content: center; }
+  .brew { grid-column: 1 / -1; height: auto; padding: 10px 12px; font-size: 10.5px; justify-content: space-between; }
+  .fine { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .band { animation: none; } }
+</style>
+</head>
+<body>
+<!--
+THESIS: The page is the desktop the app makes. Menu bar on top, Dock at the bottom, both with the app's glowing bands, the live black hole as the wallpaper in between. The visitor sees the product in its real place before reading a word. Refuses the floating product screenshot inside a laptop frame.
+OWN-WORLD: near-black violet void, the Strudel palette at full strength in the sky, pale disk-gold for the one action, flowing two-pixel bands in orange to magenta to cyan, Bricolage Grotesque condensed for display, Hanken Grotesk for reading, translucent bars only where macOS itself is translucent.
+STORY: this is your desktop with it; the light really bends; get it from the Dock.
+FIRST VIEWPORT: full-bleed live hole offset right, menu bar with the app's tray icon and nav, H1 and lede lower left, a Dock-like bar centered at the bottom holding the app icon, the download button and the brew command.
+FORM: candidate 1 of 7 (the desktop itself), pick card, seed f7a0f39c.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+<section class="desk" aria-label="Black Hole Wallpaper">
+  <div class="sky" id="sky"><img src="../shared/img/strudel.webp" alt="Still from the app: a magenta and orange disk around a black hole inside a violet nebula, preset Your Swirl."></div>
+
+  <nav class="menubar" aria-label="Sections">
+    <b>Black Hole Wallpaper</b>
+    <a class="hide-s" href="#physics">Physics</a>
+    <a class="hide-s" href="#presets">Presets</a>
+    <a class="hide-s" href="#install">Install</a>
+    <span class="right"><a href="/de/">Deutsch</a><img class="tray" src="../shared/img/menubar@2x.png" alt="" width="18" height="18"></span>
+    <span class="band" aria-hidden="true"></span>
+  </nav>
+
+  <div class="stage">
+    <h1>Your desktop, bent by a black hole.</h1>
+    <p class="lede">Black Hole Wallpaper is a live wallpaper for macOS. Every pixel follows a ray of light around a spinning black hole, computed in Metal on your Mac.</p>
+    <p class="tilt"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2l9.5 5.2-4.3 1.1L6.4 12.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Move your pointer. This black hole bends light too, a lighter version of the app's.</p>
+  </div>
+
+  <div class="dock">
+    <img src="../shared/img/icon-256.png" alt="App icon" width="52" height="52">
+    <a class="get" href="https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v11M5 9.5l5 5 5-5M3 17.5h14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>Download for macOS</a>
+    <button class="brew" type="button" data-copy="brew install --cask digitaliq/tap/blackhole-wallpaper"><span class="cmd">brew install --cask digitaliq/tap/blackhole-wallpaper</span> <span class="k">Copy</span></button>
+    <span class="band" aria-hidden="true"></span>
+  </div>
+  <p class="fine">Free and open source, MIT license. macOS 15 or later.</p>
+</section>
+<script type="module">
+  import { mountBlackHole } from "../shared/blackhole.js";
+  const wide = matchMedia("(min-width: 861px)").matches;
+  mountBlackHole(document.getElementById("sky"), { palette: "strudel", yaw: 0, pitch: 0.16, dist: wide ? 30 : 27, offset: wide ? [0.36, 0.04] : [0, 0.02], scrollZoom: true });
+  for (const b of document.querySelectorAll("[data-copy]")) b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.querySelector(".k").textContent = "Copied"; } catch {}
+  });
+</script>
+</body>
+</html>

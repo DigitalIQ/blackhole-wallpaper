@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schwarzes Loch: animierter Hintergrund für deinen Mac</title>
+<meta name="description" content="Freier, quelloffener Live-Hintergrund für macOS: ein drehendes Schwarzes Loch mit echter Lichtbiegung, gerechnet in Metal. Laden oder per Homebrew.">
+<link rel="canonical" href="https://digitaliq.github.io/blackhole-wallpaper/de/">
+<link rel="alternate" hreflang="en" href="https://digitaliq.github.io/blackhole-wallpaper/">
+<link rel="alternate" hreflang="de" href="https://digitaliq.github.io/blackhole-wallpaper/de/">
+<link rel="alternate" hreflang="x-default" href="https://digitaliq.github.io/blackhole-wallpaper/">
+<meta name="theme-color" content="#E4E6EA">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://digitaliq.github.io/blackhole-wallpaper/de/">
+<meta property="og:title" content="Schwarzes Loch: animierter Hintergrund für deinen Mac">
+<meta property="og:description" content="Freier, quelloffener Live-Hintergrund für macOS: ein drehendes Schwarzes Loch mit echter Lichtbiegung, gerechnet in Metal. Laden oder per Homebrew.">
+<meta property="og:image" content="https://digitaliq.github.io/blackhole-wallpaper/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Schwarzes Loch. Echte Lichtbiegung, live auf deinem Mac.">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" href="../assets/img/favicon-512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+<link rel="preload" href="../assets/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/site.css">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Black Hole Wallpaper", "alternateName": "Schwarzes Loch", "description": "Freier, quelloffener Live-Hintergrund für macOS: ein drehendes Schwarzes Loch mit echter Lichtbiegung, gerechnet in Metal. Laden oder per Homebrew.", "url": "https://digitaliq.github.io/blackhole-wallpaper/de/", "inLanguage": "de", "applicationCategory": "DesktopEnhancementApplication", "operatingSystem": "macOS 15 or later", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "license": "https://opensource.org/licenses/MIT", "downloadUrl": "https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest", "installUrl": "https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest", "codeRepository": "https://github.com/DigitalIQ/blackhole-wallpaper", "image": "https://digitaliq.github.io/blackhole-wallpaper/assets/img/og.jpg", "screenshot": "https://digitaliq.github.io/blackhole-wallpaper/assets/img/preset-swirl.jpg", "author": {"@type": "Person", "name": "DigitalIQ", "url": "https://github.com/DigitalIQ"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Kostet es etwas?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Frei und quelloffen unter der MIT-Lizenz."}}, {"@type": "Question", "name": "Zieht es meinen Akku leer?", "acceptedAnswer": {"@type": "Answer", "text": "Im Energiesparmodus und bei verdecktem Schreibtisch hält es an. Wenn sich nur die Ränder bewegen, braucht es weniger als ein Zehntel der GPU-Zeit. Am Akku wählst du eine leichtere Qualitätsstufe. Die Messwerte stehen in der README."}}, {"@type": "Question", "name": "Auf welchen Macs läuft es?", "acceptedAnswer": {"@type": "Answer", "text": "Ab macOS 15."}}, {"@type": "Question", "name": "Warum warnt macOS beim ersten Start?", "acceptedAnswer": {"@type": "Answer", "text": "Die App ist nicht von Apple notarisiert. Seit macOS 15 hilft Rechtsklick und Öffnen nicht mehr. Klicke einmal in Systemeinstellungen > Datenschutz & Sicherheit auf „Trotzdem öffnen“ oder entferne die Quarantäne-Markierung mit xattr. Auch Homebrew stellt den Download unter Quarantäne."}}, {"@type": "Question", "name": "Ist die Physik echt?", "acceptedAnswer": {"@type": "Answer", "text": "Die Lichtbiegung ja: Die App rechnet Lichtstrahlen durch die Kerr-Raumzeit. Die Farben sind künstlerisch. Die README sagt genau, was echt ist und was genähert."}}, {"@type": "Question", "name": "Kann ich eigene 3D-Modelle nutzen?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, als OBJ, USDZ, USD, PLY, STL, glTF und GLB."}}, {"@type": "Question", "name": "Welche Sprachen kann die App?", "acceptedAnswer": {"@type": "Answer", "text": "Deutsch und Englisch. Sie folgt der Systemsprache, oder du wählst auf der Seite „Allgemein“."}}, {"@type": "Question", "name": "Geht die App ins Internet?", "acceptedAnswer": {"@type": "Answer", "text": "Nur für Updates. Sie fragt höchstens einmal am Tag bei api.github.com nach und lädt Updates von den Download-Servern von GitHub. Die Prüfung schaltest du auf der Seite „Allgemein“ ab. Keine Statistik."}}, {"@type": "Question", "name": "Trackt mich diese Seite?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Keine Cookies, keine Statistik, keine Anfragen an andere Server."}}]}]</script>
+</head>
+<body>
+<!--
+THESIS: The page is the app's technical dossier. It proves a computed black hole the way a space-agency document proves a craft: figure plates with leader lines and a spec table of measured numbers. Refuses the category default of a dark glowing hero.
+OWN-WORLD: cool datasheet grey, black 2px rules, Strudel orange as field and rule, the app's flowing bands as the sheet's lines, Archivo across its width axis, the black hole only inside black figure plates with white annotation.
+STORY: see the hole bending light, learn that it is computed, check the numbers, download.
+FIRST VIEWPORT: masthead with a flowing band, H1 in expanded caps with lede, orange download field and brew command on the left; a 7/12 figure plate with the live shader and four leader lines on the right; spec table below.
+FORM: candidate 5 of 7 (mission documentation), seed f7a0f39c, with bands borrowed from the desktop direction.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<div class="wrap">
+  <header class="head">
+    <a class="id" href="./"><img src="../assets/img/icon-64.png" alt="" width="28" height="28"><span>Schwarzes Loch</span></a>
+    <span class="doc">ab macOS 15 / MIT / Metal</span>
+    <nav aria-label="Abschnitte"><a href="#physics">Physik</a><a href="#presets">Voreinstellungen</a><a href="#objects">Objekte</a><a href="#film">Film</a><a href="#install">Installieren</a><a class="lang" href="../" hreflang="en" lang="en">English</a></nav>
+  </header>
+</div>
+<div class="band" aria-hidden="true"></div>
+
+<main id="main">
+<div class="wrap">
+  <div class="hero">
+    <div class="copy">
+      <div>
+        <h1>Dein Schreibtisch, gebogen von einem Schwarzen Loch.</h1>
+        <p class="lede">Schwarzes Loch ist ein animierter Hintergrund für macOS. Jeder Pixel folgt einem Lichtstrahl um ein drehendes Schwarzes Loch, gerechnet in Metal auf deinem Mac.</p>
+      </div>
+      <div class="act">
+        <a class="btn" href="https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest">Für macOS laden<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v11M5 9.5l5 5 5-5M3 17.5h14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="square"/></svg></a>
+        <button class="copy-cmd" type="button" data-copy="brew tap digitaliq/tap &amp;&amp; brew trust --tap digitaliq/tap &amp;&amp; brew install --cask blackhole-wallpaper" data-label="Kopieren" data-done="Kopiert"><code>brew tap digitaliq/tap<br>brew trust --tap digitaliq/tap<br>brew install --cask blackhole-wallpaper</code><span class="k" aria-live="polite">Kopieren</span></button>
+        <p class="fine">Frei und quelloffen, MIT-Lizenz. Ab macOS 15.</p>
+      </div>
+    </div>
+    <figure class="fig">
+      <div class="plate" id="plate" data-label="Ein Schwarzes Loch, live im Browser gerechnet: dünne leuchtende Scheibe, die Rückseite über den Schatten gebogen.">
+        <picture><source type="image/webp" srcset="../assets/img/hero-still.webp"><img src="../assets/img/hero-still.jpg" alt="Standbild aus der App, Voreinstellung Gargantua: ein Schwarzes Loch mit dünner leuchtender Scheibe, deren Rückseite sich über den Schatten biegt." width="1400" height="1061"></picture>
+        <svg class="anno" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <circle cx="500" cy="520" r="172" stroke-dasharray="3 5"/>
+          <polyline points="625,400 770,232 980,232"/><text x="776" y="218">Photonenring</text>
+          <polyline points="470,350 330,190 20,190"/><text x="20" y="176">Rückseite der Scheibe, nach oben gebogen</text>
+          <polyline class="m1" points="500,520 330,770 20,770"/><text class="m1" x="20" y="756">Schatten</text>
+          <polyline points="705,520 770,800 980,800"/><text x="980" y="826" text-anchor="end">Hellere Seite, kommt auf dich zu</text>
+        </svg>
+      </div>
+      <figcaption class="cap"><b>Fig. 1</b><span>Live in deinem Browser: eine leichtere Fassung des Lochs aus der App, Voreinstellung Gargantua. Ohne WebGL oder bei reduzierter Bewegung siehst du ein Standbild aus der App.</span><span class="hint" data-touch="Ziehen zum Kippen">Beweg die Maus</span></figcaption>
+    </figure>
+  </div>
+</div>
+<div class="band" aria-hidden="true"></div>
+<div class="wrap">
+  <dl class="spec"><div><dt class="label">Licht</dt><dd class="num">Strahlen verfolgt, Kerr-Metrik</dd></div><div><dt class="label">GPU, alles bewegt *</dt><dd class="num">1,7 bis 2,6 ms pro Bild</dd></div><div><dt class="label">GPU, nur Ränder *</dt><dd class="num">0,12 bis 0,14 ms pro Bild</dd></div><div><dt class="label">Voreinstellungen</dt><dd class="num">7, dazu deine eigenen</dd></div></dl>
+  <p class="fine spec-note">* Gemessen auf einem MacBook Air M4 bei 3440 x 1440.</p>
+</div>
+
+<section class="dark" id="physics" aria-labelledby="physics-h">
+  <div class="wrap phys">
+    <div class="text">
+      <h2 id="physics-h">Echte Lichtbiegung statt Videoschleife</h2>
+      <p>Die meisten Schwarzes-Loch-Hintergründe sind Videos. Dieser wird gerechnet. Die App verfolgt für jeden Pixel einen Lichtstrahl durch die Raumzeit eines drehenden Schwarzen Lochs (Kerr), Schritt für Schritt. Daraus entstehen der Schatten, der dünne Photonenring, die Rückseite der Scheibe, die sich über den Schatten biegt, und Sterne, die sich nahe dem Einstein-Ring zu Bögen ziehen.</p><p>Die Scheibe beginnt an der innersten stabilen Bahn und dreht sich nach Kepler. Die Seite, die auf dich zukommt, ist heller und blauer, durch Doppler-Effekt und Gravitations-Rotverschiebung.</p>
+      <dl class="truth"><div><dt class="label">Gerechnet</dt><dd>Lichtwege, Schatten, Photonenring, die gebogene Rückseite der Scheibe, Doppler-Aufhellung, gebogene Sterne und Objekte.</dd></div><div><dt class="label art">Künstlerisch</dt><dd>Die Farben. Eine echte Scheibe leuchtet weiß bis orange. Die Paletten sind eine Entscheidung, und du kannst sie ändern.</dd></div></dl>
+    </div>
+    <div class="figs"><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/fig-close.webp"><img src="../assets/img/fig-close.jpg" alt="Nahaufnahme aus der App: der schwarze Schatten, an seinem Rand ein dünner heller Ring, darum die leuchtende Scheibe in Orange und Magenta." width="1000" height="700" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>Fig. 2</b><span>Nah am Schatten: der Photonenring und die Scheibe, die sich um ihn biegt.</span></figcaption></figure><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/fig-ring.webp"><img src="../assets/img/fig-ring.jpg" alt="Ein dünner weißer Ring um das Schwarze Loch und seine magentafarbene Scheibe: das Bild einer Galaxie dahinter." width="1000" height="769" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>Fig. 3</b><span>Eine Galaxie genau hinter dem Loch wird zum geschlossenen Einstein-Ring.</span></figcaption></figure><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/fig-planet.webp"><img src="../assets/img/fig-planet.jpg" alt="Ein Ringplanet, zu Bögen um das Schwarze Loch gezogen, Voreinstellung Gargantua." width="1000" height="769" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>Fig. 4</b><span>Ein Ringplanet hinter dem Loch, zum Ring gebogen, mit Gegenbild.</span></figcaption></figure></div>
+  </div>
+</section>
+<div class="band" aria-hidden="true"></div>
+
+<section id="presets" aria-labelledby="presets-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="presets-h">Sieben Voreinstellungen, dann deine eigene</h2><p>Wähl eine pro Bildschirm oder eine für alle. Dupliziere eine Voreinstellung und ändere Loch, Scheibe, Farben, Nebel, Sterne und Ränder.</p></div>
+    <ul class="presets"><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-swirl.webp"><img src="../assets/img/preset-swirl.jpg" alt="Standbild aus der App, Voreinstellung Strudel." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5a</b><span><strong>Strudel.</strong> Scheibe in Magenta und Orange in einem violetten Nebel. Der Standard.</span></figcaption></figure></li><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-gargantua.webp"><img src="../assets/img/preset-gargantua.jpg" alt="Standbild aus der App, Voreinstellung Gargantua." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5b</b><span><strong>Gargantua.</strong> Warme, dünne Scheibe von der Seite, wie im Film.</span></figcaption></figure></li><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-m87.webp"><img src="../assets/img/preset-m87.jpg" alt="Standbild aus der App, Voreinstellung M87* wie auf dem Foto." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5c</b><span><strong>M87* wie auf dem Foto.</strong> Fast von vorn, wie das erste Foto eines Schwarzen Lochs.</span></figcaption></figure></li><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-topview.webp"><img src="../assets/img/preset-topview.jpg" alt="Standbild aus der App, Voreinstellung Draufsicht." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5d</b><span><strong>Draufsicht.</strong> Die Scheibe von oben.</span></figcaption></figure></li><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-iceblue.webp"><img src="../assets/img/preset-iceblue.jpg" alt="Standbild aus der App, Voreinstellung Eisblau." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5e</b><span><strong>Eisblau.</strong> Kaltes Blau und Violett.</span></figcaption></figure></li><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-starsystem.webp"><img src="../assets/img/preset-starsystem.jpg" alt="Standbild aus der App, Voreinstellung Sternsystem." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5f</b><span><strong>Sternsystem.</strong> Galaxien, ein Pulsar, ein Asteroidengürtel, ein Ringplanet mit Mond und ein Komet ums Loch.</span></figcaption></figure></li><li><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/preset-scifi.webp"><img src="../assets/img/preset-scifi.jpg" alt="Standbild aus der App, Voreinstellung SciFi-Hafen." width="1400" height="586" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>5g</b><span><strong>SciFi-Hafen.</strong> Ein Wurmloch neben dem Loch, eine Raumstation, ein Sternentor und Schiffe aus vier Universen.</span></figcaption></figure></li></ul>
+  </div>
+</section>
+
+<section class="spot" id="objects" aria-labelledby="objects-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="objects-h">Stell etwas dazu. Das Loch biegt es.</h2><p>Steht eine Galaxie genau hinter dem Loch, wird sie zum geschlossenen Einstein-Ring. Knapp daneben teilt sie sich in zwei Bögen. Ein Planet auf seiner Bahn taucht hinter der Scheibe ab und kommt gebogen wieder hervor. Kometenschweife zeigen vom Loch weg.</p></div>
+    <div class="objects">
+      <figure class="fig main-fig"><picture><source type="image/webp" srcset="../assets/img/obj-ships.webp"><img src="../assets/img/obj-ships.jpg" alt="Standbild aus der App: das Schwarze Loch mit magentafarbener Scheibe, darum ein Sternzerstörer, ein Raumschiff und eine Raumstation." width="1600" height="768" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>Fig. 6</b><span>SciFi-Hafen auf einem Ultrawide-Schirm: Schiffe und eine Station auf ihren Bahnen ums Loch.</span></figcaption></figure>
+      <div>
+        <ul class="kinds"><li><span>01</span>Galaxien, von der Spirale bis zum Quasar</li><li><span>02</span>Ferne und nahe Sterne, Pulsare und Magnetare</li><li><span>03</span>Ein Jet entlang der Drehachse</li><li><span>04</span>Planeten mit Ringen, Wolken und Stürmen, dazu ihre Monde</li><li><span>05</span>Asteroiden, Gürtel, Kometen und Meteore</li><li><span>06</span>Schiffe und Stationen aus vielen Science-Fiction-Welten, dazu echte Raumfahrt wie Hubble und James Webb</li><li><span>07</span>Ein zweites Schwarzes Loch und ein Wurmloch</li></ul>
+        <div class="notes"><p>Bring dein eigenes 3D-Modell mit, als OBJ, USDZ, USD, PLY, STL, glTF oder GLB.</p><p class="fine">Die Schiffe sind einfache Formen, in der App gebaut, als Hommage von Fans. Keine Verbindung zu einem Studio oder einer Marke.</p></div>
+      </div>
+    </div>
+    <div class="motion-row"><h3 class="motion-h">Die Bewegung folgt der Physik</h3><ul class="motion"><li><span>&rarr;</span>Körper laufen auf Kepler-Bahnen. Schnelle Besucher schwingen vorbei oder stürzen hinein.</li><li><span>&rarr;</span>Gezeiten ziehen sie nahe am Loch in die Länge. Ihr Licht wird röter oder blauer.</li><li><span>&rarr;</span>Monde bleiben an ihren Planeten gebunden. Asteroiden taumeln. Meteore werden langsamer.</li><li><span>&rarr;</span>Schiffe beschleunigen und gehen in die Kurve. Ein zweites Loch hat echte Masse.</li><li><span>&rarr;</span>Ein Zeitraffer-Regler beschleunigt alles.</li></ul></div>
+    <div class="obj-row"><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/obj-wormhole.webp"><img src="../assets/img/obj-wormhole.jpg" alt="Eine Kugel neben dem Schwarzen Loch, in der ein anderer, kühlerer Himmel zu sehen ist." width="1000" height="419" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>6b</b><span>Wurmloch: ein anderer Himmel darin</span></figcaption></figure><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/obj-second.webp"><img src="../assets/img/obj-second.jpg" alt="Ein kleineres Schwarzes Loch mit Scheibe und Jet neben dem Hauptloch." width="1000" height="419" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>6c</b><span>Ein zweites Schwarzes Loch mit Scheibe und Jet</span></figcaption></figure><figure class="fig"><picture><source type="image/webp" srcset="../assets/img/obj-planet.webp"><img src="../assets/img/obj-planet.jpg" alt="Ein erdähnlicher Planet mit Wolken neben dem Schwarzen Loch." width="1000" height="419" loading="lazy" decoding="async"></picture><figcaption class="cap"><b>6d</b><span>Ein erdähnlicher Planet im Licht der Scheibe</span></figcaption></figure></div>
+  </div>
+</section>
+
+<section class="tint" id="mac" aria-labelledby="mac-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="mac-h">Gemacht, um hinter deiner Arbeit zu bleiben</h2></div>
+    <div class="mac">
+      <ul class="facts"><li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M2 5h18M2 17h18" stroke="currentColor" stroke-width="2"/></svg><span>Leuchtende Bänder laufen an Menüleiste und Dock entlang.</span></li><li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M3 11h4l2-5 4 10 2-5h4" stroke="currentColor" stroke-width="2" fill="none"/></svg><span>Drei Stufen: alles bewegt sich, nur die Ränder, oder ein Standbild.</span></li><li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M7 4v14M15 4v14" stroke="currentColor" stroke-width="3"/></svg><span>Im Energiesparmodus und bei verdecktem Schreibtisch hält es an.</span></li><li><svg viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="4" width="18" height="11" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 19h6" stroke="currentColor" stroke-width="2"/></svg><span>Wähl eine Voreinstellung pro Bildschirm. Ein Bildschirmschoner und ein Standbild für den Sperrbildschirm sind dabei.</span></li><li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M4 18v-4M9 18v-8M14 18v-12M19 18V4" stroke="currentColor" stroke-width="3"/></svg><span>Vier Qualitätsstufen: Akku sparen, Ausgewogen, Hoch und Ultra. Eine Stufe fürs Netzteil, eine für den Akku, sechs Bereiche lassen sich einzeln einstellen. Der Jet ist schon bei Ausgewogen glatt.</span></li><li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M3 5h16M3 11h16M3 17h16" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M14 9v4M7 15v4" stroke="currentColor" stroke-width="2"/></svg><span>Die App gibt es auf Deutsch und Englisch. Sie folgt der Systemsprache, oder du wählst auf der Seite „Allgemein“.</span></li></ul>
+      <figure class="chart">
+        <div class="body">
+          <div class="bar"><div class="lbl"><span>Alles bewegt sich</span><span class="num">1,7 bis 2,6 ms</span></div><div class="track"><span class="range hot" style="left:56.7%;width:30%"></span></div></div>
+          <div class="bar"><div class="lbl"><span>Nur die Ränder</span><span class="num">0,12 bis 0,14 ms</span></div><div class="track"><span class="range" style="left:4%;width:1.2%;min-width:4px"></span></div></div>
+          <div class="axis num" aria-hidden="true"><span>0 ms</span><span>1</span><span>2</span><span>3 ms</span></div>
+        </div>
+        <figcaption class="cap"><b>Fig. 7</b><span>GPU-Zeit pro Bild, MacBook Air M4 bei 3440 x 1440. Standard sind 30 Bilder pro Sekunde.</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="dark film" id="film" aria-labelledby="film-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="film-h">26 Sekunden in Bewegung</h2><p>Aus der App gerendert, ohne Ton.</p></div>
+    <figure class="fig">
+      <div class="player">
+        <video id="promo" muted playsinline loop preload="none" poster="../assets/film/poster.jpg" width="1920" height="1080">
+          <source src="../assets/film/promo.webm" type="video/webm">
+          <source src="../assets/film/promo.mp4" type="video/mp4">
+          <p>Dein Browser kann das Video nicht abspielen. <a href="../assets/film/promo.mp4">MP4 herunterladen</a></p>
+        </video>
+        <button class="play" id="play" type="button"><span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z" fill="currentColor"/></svg>Film abspielen</span></button>
+      </div>
+      <figcaption class="cap"><b>Fig. 8</b><span>Jede Einstellung hat die App selbst gerendert. <a href="../assets/film/promo.mp4">MP4 herunterladen</a></span></figcaption>
+    </figure>
+  </div>
+</section>
+<div class="band" aria-hidden="true"></div>
+
+<section id="install" aria-labelledby="install-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="install-h">Installieren</h2><p>Zwei Wege, dieselbe App.</p></div>
+    <div class="install">
+      <div class="path">
+        <h3>Download</h3>
+        <ol class="steps">
+          <li>Lade die neueste Version von GitHub.<a class="btn" href="https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest">Neueste Version laden<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v11M5 9.5l5 5 5-5M3 17.5h14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="square"/></svg></a></li>
+          <li>Leg die App in den Ordner Programme.</li>
+          <li class="warn">Die App ist nicht von Apple notarisiert, deshalb blockiert macOS den ersten Start. Öffne sie einmal und klicke in Systemeinstellungen &gt; Datenschutz &amp; Sicherheit auf „Trotzdem öffnen“. Oder im Terminal: xattr -dr com.apple.quarantine /Applications/BlackHoleWallpaper.app</li>
+          <li>Sie sitzt in der Menüleiste. Dort öffnest du die Einstellungen, oder du startest die App noch einmal über Spotlight.</li>
+        </ol>
+      </div>
+      <div class="path">
+        <h3>Homebrew</h3>
+        <ol class="steps">
+          <li>Im Terminal ausführen:<button class="copy-cmd" type="button" data-copy="brew tap digitaliq/tap &amp;&amp; brew trust --tap digitaliq/tap &amp;&amp; brew install --cask blackhole-wallpaper" data-label="Kopieren" data-done="Kopiert"><code>brew tap digitaliq/tap<br>brew trust --tap digitaliq/tap<br>brew install --cask blackhole-wallpaper</code><span class="k" aria-live="polite">Kopieren</span></button></li>
+          <li class="warn">Die App ist nicht von Apple notarisiert, deshalb blockiert macOS den ersten Start. Öffne sie einmal und klicke in Systemeinstellungen &gt; Datenschutz &amp; Sicherheit auf „Trotzdem öffnen“. Oder im Terminal: xattr -dr com.apple.quarantine /Applications/BlackHoleWallpaper.app</li>
+          <li>Sie sitzt in der Menüleiste. Dort öffnest du die Einstellungen, oder du startest die App noch einmal über Spotlight.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tint" id="faq" aria-labelledby="faq-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="faq-h">Fragen</h2></div>
+    <div class="faq"><details><summary>Kostet es etwas?</summary><p>Nein. Frei und quelloffen unter der MIT-Lizenz.</p></details><details><summary>Zieht es meinen Akku leer?</summary><p>Im Energiesparmodus und bei verdecktem Schreibtisch hält es an. Wenn sich nur die Ränder bewegen, braucht es weniger als ein Zehntel der GPU-Zeit. Am Akku wählst du eine leichtere Qualitätsstufe. Die Messwerte stehen in der README.</p></details><details><summary>Auf welchen Macs läuft es?</summary><p>Ab macOS 15.</p></details><details><summary>Warum warnt macOS beim ersten Start?</summary><p>Die App ist nicht von Apple notarisiert. Seit macOS 15 hilft Rechtsklick und Öffnen nicht mehr. Klicke einmal in Systemeinstellungen &gt; Datenschutz &amp; Sicherheit auf „Trotzdem öffnen“ oder entferne die Quarantäne-Markierung mit xattr. Auch Homebrew stellt den Download unter Quarantäne.</p></details><details><summary>Ist die Physik echt?</summary><p>Die Lichtbiegung ja: Die App rechnet Lichtstrahlen durch die Kerr-Raumzeit. Die Farben sind künstlerisch. Die README sagt genau, was echt ist und was genähert.</p></details><details><summary>Kann ich eigene 3D-Modelle nutzen?</summary><p>Ja, als OBJ, USDZ, USD, PLY, STL, glTF und GLB.</p></details><details><summary>Welche Sprachen kann die App?</summary><p>Deutsch und Englisch. Sie folgt der Systemsprache, oder du wählst auf der Seite „Allgemein“.</p></details><details><summary>Geht die App ins Internet?</summary><p>Nur für Updates. Sie fragt höchstens einmal am Tag bei api.github.com nach und lädt Updates von den Download-Servern von GitHub. Die Prüfung schaltest du auf der Seite „Allgemein“ ab. Keine Statistik.</p></details><details><summary>Trackt mich diese Seite?</summary><p>Nein. Keine Cookies, keine Statistik, keine Anfragen an andere Server.</p></details></div>
+  </div>
+</section>
+</main>
+
+<div class="band" aria-hidden="true"></div>
+<footer class="foot">
+  <div class="wrap">
+    <span>Made by DigitalIQ</span>
+    <a href="https://opensource.org/licenses/MIT">MIT-Lizenz</a>
+    <a href="https://github.com/DigitalIQ/blackhole-wallpaper">Quellcode auf GitHub</a>
+    <a href="../" hreflang="en" lang="en">English</a>
+  </div>
+</footer>
+<script type="module" src="../assets/js/main.js"></script>
+</body>
+</html>

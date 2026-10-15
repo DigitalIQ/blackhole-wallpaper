@@ -1,0 +1,39 @@
+# Veröffentlicht website/ auf GitHub Pages bei jedem Push auf main.
+# Läuft erst, wenn Pages im Repo auf "GitHub Actions" gestellt ist.
+# Arbeitsdateien (Texte, Recherche, Entwürfe, Werkzeuge) gehen nicht mit raus.
+name: Website
+
+on:
+  push:
+    branches: [main]
+    paths: ["website/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seite zusammenstellen
+        run: |
+          mkdir _site
+          cp -R website/index.html website/404.html website/favicon.ico website/robots.txt website/sitemap.xml website/llms.txt website/de website/assets _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

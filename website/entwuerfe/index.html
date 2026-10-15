@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Richtungswahl</title>
+<style>
+:root { --bg: #111015; --fg: #EFEAF2; --mut: #B7AFC2; }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; padding: 32px 16px 64px; }
+main { max-width: 1240px; margin: 0 auto; display: grid; gap: 48px; }
+h1 { font-size: 28px; }
+p { color: var(--mut); max-width: 70ch; }
+section { display: grid; gap: 14px; }
+h2 { font-size: 22px; }
+.row { display: grid; grid-template-columns: 3fr 1fr; gap: 16px; align-items: start; }
+img { width: 100%; height: auto; display: block; border: 1px solid #2a2733; }
+a { color: #FFB27A; }
+@media (max-width: 760px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div><h1>Black Hole Wallpaper: zwei Richtungen</h1><p>Erste Bildschirmseite, Desktop (1440 x 900) und Handy (390 x 844). Das Loch ist in beiden live (three.js), die Bilder sind Screenshots aus Chrome. Details in <code>website/richtungen.md</code>.</p></div>
+  <section><h2>A: Missionsakte (Empfehlung)</h2><p>Die App als technisches Datenblatt. Helles Grau, schwarze Linien, Orange als Fläche, das Loch als „Fig. 1“ mit Leitlinien, darunter echte Messwerte.</p>
+    <div class="row"><img src="bilder/a-missionsakte-desktop.jpg" alt="Richtung A, Desktop"><img src="bilder/a-missionsakte-handy.jpg" alt="Richtung A, Handy"></div>
+    <p><a href="a-missionsakte/">Live-Entwurf öffnen</a></p></section>
+  <section><h2>B: Schreibtisch</h2><p>Die Seite ist der Schreibtisch, den die App macht. Menüleiste und Dock mit fließenden Bändern, dazwischen das Loch über die ganze Fläche, Download im Dock.</p>
+    <div class="row"><img src="bilder/b-schreibtisch-desktop.jpg" alt="Richtung B, Desktop"><img src="bilder/b-schreibtisch-handy.jpg" alt="Richtung B, Handy"></div>
+    <p><a href="b-schreibtisch/">Live-Entwurf öffnen</a></p></section>
+</main>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Black Hole Wallpaper: a live black hole for your Mac</title>
+<meta name="description" content="Free, open source animated wallpaper for macOS. A spinning black hole with real light bending, computed in Metal. Download it or install with Homebrew.">
+<link rel="icon" href="../shared/img/icon-256.png">
+<style>
+@font-face { font-family: "Archivo"; src: url(../shared/fonts/archivo-latin-wdth-normal.woff2) format("woff2-variations"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+:root {
+  --paper: #E4E6EA;      /* kühles Datenblatt-Grau, kein Creme */
+  --ink: #0B0A10;
+  --ink-2: #3A3846;      /* 9,6:1 auf --paper */
+  --rule: #0B0A10;
+  --spot: #FF7A1F;       /* Strudel-Orange der App, nur als Fläche und Linie */
+  --plate: #050308;
+  --mag: #D23A78;
+  --gut: clamp(16px, 3vw, 40px);
+}
+* { box-sizing: border-box; margin: 0; }
+html { background: var(--paper); color: var(--ink); font-family: "Archivo", system-ui, sans-serif; font-stretch: 100%; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--spot); color: var(--ink); }
+a { color: inherit; text-underline-offset: .2em; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.sheet { min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto auto; padding: 0 var(--gut); }
+
+/* Kopfzeile wie der Kopf eines Datenblatts */
+.head { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; padding: 14px 0 12px; border-bottom: 2px solid var(--rule); font-stretch: 112%; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.head img { width: 28px; height: 28px; display: block; }
+.head .id { display: flex; gap: 10px; align-items: center; }
+.head nav { justify-self: end; display: flex; gap: 22px; }
+.head nav a { text-decoration: none; }
+.head nav a:hover { text-decoration: underline; }
+.head .doc { justify-self: center; color: var(--ink-2); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Hauptfläche: links Text, rechts die Bildplatte */
+.main { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--gut); padding: clamp(20px, 3.2vw, 44px) 0; align-items: stretch; }
+.copy { display: flex; flex-direction: column; justify-content: space-between; gap: 28px; }
+h1 { font-stretch: 125%; font-weight: 800; font-size: clamp(38px, 4.6vw, 76px); line-height: .95; letter-spacing: -.035em; text-transform: uppercase; text-wrap: balance; }
+.lede { font-size: clamp(17px, 1.3vw, 20px); line-height: 1.45; max-width: 34ch; color: var(--ink-2); font-stretch: 96%; margin-top: 22px; }
+.act { display: grid; gap: 10px; max-width: 540px; }
+.btn { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 20px; background: var(--spot); color: var(--ink); text-decoration: none; font-weight: 750; font-stretch: 118%; text-transform: uppercase; letter-spacing: .02em; font-size: 16px; border: 2px solid var(--ink); }
+.btn:hover { background: var(--ink); color: var(--spot); }
+.btn svg { width: 20px; height: 20px; }
+.brew { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 12px 20px; border: 2px solid var(--ink); font: 500 13px/1.2 ui-monospace, "SF Mono", Menlo, monospace; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
+.brew span.k { font: 700 11px/1 "Archivo"; font-stretch: 112%; letter-spacing: .08em; text-transform: uppercase; border-left: 2px solid var(--ink); padding-left: 12px; }
+.brew:hover { background: var(--ink); color: var(--paper); }
+.brew:hover span.k { border-color: var(--paper); }
+.fine { font-size: 13px; color: var(--ink-2); font-stretch: 100%; }
+
+/* Bildplatte mit Bemaßung */
+.fig { display: grid; grid-template-rows: 1fr auto; border: 2px solid var(--ink); background: var(--plate); min-height: 0; }
+.plate { position: relative; overflow: hidden; min-height: 420px; }
+.plate img, .plate canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.plate.is-live img { visibility: hidden; }
+.anno { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.anno text { font: 600 20px "Archivo"; font-stretch: 112%; letter-spacing: .08em; text-transform: uppercase; fill: #F3EDE6; }
+.anno polyline, .anno circle { stroke: #F3EDE6; stroke-width: 1; fill: none; vector-effect: non-scaling-stroke; }
+.cap { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; padding: 10px 14px; background: var(--paper); border-top: 2px solid var(--ink); font-size: 12px; line-height: 1.35; }
+.cap b { font-stretch: 118%; text-transform: uppercase; letter-spacing: .06em; }
+.cap .hint { color: var(--ink-2); }
+
+/* Fußleiste: Spezifikation als Tabelle, echte Messwerte */
+.spec { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--rule); }
+.spec div { padding: 12px 16px 16px 0; border-right: 1px solid var(--rule); margin-right: 16px; }
+.spec div:last-child { border-right: 0; }
+.spec dt { font-size: 11px; font-weight: 700; font-stretch: 112%; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.foot { padding: 0 0 14px; }
+.spec dd { margin-top: 6px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; font-stretch: 100%; }
+
+@media (max-width: 860px) {
+  .head nav, .head .doc { display: none; }
+  .head { grid-template-columns: 1fr auto; }
+  .main { grid-template-columns: 1fr; padding-top: 18px; gap: 18px; }
+  .copy { display: contents; }
+  .copy > div:first-child { order: 1; }
+  .fig { order: 2; }
+  .act { order: 3; max-width: none; }
+  .plate { min-height: 0; aspect-ratio: 16 / 11; }
+  .anno text { font-size: 44px; } .anno text, .anno polyline { display: none; } .anno text.m:nth-of-type(3), .anno polyline:nth-of-type(3) { display: inline; }
+  .brew { font-size: 11px; padding-left: 14px; }
+  .cap { grid-template-columns: 1fr; gap: 2px; }
+  .spec { grid-template-columns: 1fr 1fr; }
+  .spec div:nth-child(2) { border-right: 0; }
+  .spec div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  .lede { margin-top: 14px; }
+  h1 { font-size: clamp(34px, 10vw, 48px); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<!--
+THESIS: The page is the app's technical dossier. It proves a computed black hole the way a space-agency document proves a craft: a figure plate with dimension lines and a spec table of measured numbers. Refuses the category default of a dark glowing hero over a gradient.
+OWN-WORLD: cool datasheet grey, black ink rules at 2px, one spot of Strudel orange as field and rule, Archivo across its width axis (expanded caps for titles, normal for text), the live hole only ever inside a black figure plate with white annotation lines.
+STORY: see the hole bending light, learn that it is computed, check the numbers, download.
+FIRST VIEWPORT: masthead rule, left H1 in expanded caps with lede and an orange download field plus the brew command; right a 7/12 figure plate with the live shader and four labelled leader lines; spec table across the bottom.
+FORM: candidate 5 of 7 (mission documentation), seed f7a0f39c.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+<div class="sheet">
+  <header class="head">
+    <div class="id"><img src="../shared/img/icon-256.png" alt="" width="28" height="28"><span>Black Hole Wallpaper</span></div>
+    <span class="doc">macOS 15+ &nbsp;/&nbsp; MIT &nbsp;/&nbsp; Metal</span>
+    <nav aria-label="Sections"><a href="#physics">Physics</a><a href="#presets">Presets</a><a href="#install">Install</a><a href="/de/">Deutsch</a></nav>
+  </header>
+
+  <main class="main">
+    <div class="copy">
+      <div>
+        <h1>Your desktop, bent by a black hole.</h1>
+        <p class="lede">Black Hole Wallpaper is a live wallpaper for macOS. Every pixel follows a ray of light around a spinning black hole, computed in Metal on your Mac.</p>
+      </div>
+      <div class="act">
+        <a class="btn" href="https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest">Download for macOS
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v11M5 9.5l5 5 5-5M3 17.5h14" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="square"/></svg></a>
+        <button class="brew" type="button" data-copy="brew install --cask digitaliq/tap/blackhole-wallpaper">brew install --cask digitaliq/tap/blackhole-wallpaper <span class="k">Copy</span></button>
+        <p class="fine">Free and open source, MIT license. macOS 15 or later.</p>
+      </div>
+    </div>
+
+    <figure class="fig">
+      <div class="plate" id="plate">
+        <img src="../shared/img/gargantua.webp" alt="Still from the app: a black hole with a thin glowing disk bent over its shadow, preset Gargantua.">
+        <svg class="anno" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <circle cx="500" cy="520" r="172" stroke-dasharray="3 5"/>
+          <polyline points="625,400 770,232 980,232"/><text x="776" y="218">Photon ring</text>
+          <polyline points="470,350 330,190 20,190"/><text x="20" y="176">Far side of the disk, bent up</text>
+          <polyline points="500,520 330,770 20,770"/><text x="20" y="756" class="m">Shadow</text>
+          <polyline points="705,520 770,800 980,800"/><text x="980" y="786" text-anchor="end" class="m">Brighter side, moving toward you</text>
+        </svg>
+      </div>
+      <figcaption class="cap"><b>Fig. 1</b><span>Live in your browser: a lighter version of the app's ray tracer, preset Gargantua.</span><span class="hint" data-touch="Drag to tilt">Move your pointer</span></figcaption>
+    </figure>
+  </main>
+
+  <dl class="spec">
+    <div><dt>Light</dt><dd>Ray traced, Kerr metric</dd></div>
+    <div><dt>GPU, all moving *</dt><dd>1.7 to 2.6 ms per frame</dd></div>
+    <div><dt>GPU, edges only *</dt><dd>0.12 to 0.14 ms per frame</dd></div>
+    <div><dt>Presets</dt><dd>7, plus your own</dd></div>
+  </dl>
+  <p class="fine foot">* Measured on a MacBook Air M4 at 3440 x 1440.</p>
+</div>
+<script type="module">
+  import { mountBlackHole } from "../shared/blackhole.js";
+  mountBlackHole(document.getElementById("plate"), { palette: "gargantua", pitch: 0.09, dist: 34, time: window.__still ? 20 : undefined });
+  if (matchMedia("(pointer: coarse)").matches) for (const h of document.querySelectorAll("[data-touch]")) h.textContent = h.dataset.touch;
+  for (const b of document.querySelectorAll("[data-copy]")) b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.querySelector(".k").textContent = "Copied"; } catch {}
+  });
+</script>
+</body>
+</html>

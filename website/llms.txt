@@ -1,0 +1,20 @@
+# Black Hole Wallpaper
+
+> Black Hole Wallpaper (German name: Schwarzes Loch) is a free, open source animated desktop wallpaper for macOS, released under the MIT license by the GitHub account DigitalIQ.
+
+The app renders a spinning Kerr black hole live in Metal. For every pixel it integrates a light ray with Hamilton's equations and a fourth-order Runge-Kutta method. The accretion disk starts at the innermost stable circular orbit, rotates at Kepler speed and is brighter on the side moving toward the viewer. The colors are artistic; a real disk would glow white to orange.
+
+The app ships seven presets: Swirl, Gargantua, M87* as photographed, Top View, Ice Blue, Star System and Sci-Fi Harbor. Objects such as galaxies, planets, comets and spaceships are lensed by the black hole; a galaxy directly behind it appears as an Einstein ring. Users can import their own 3D models as OBJ, USDZ, USD, PLY, STL, glTF or GLB files. Bodies move on Kepler orbits, with hyperbolic flybys, tidal stretching and gravitational red and blue shift. The app has four quality levels (Battery Saver, Balanced, High, Ultra), one for the power adapter (default High) and one for battery (default Balanced), and comes in English and German.
+
+The app pauses in Low Power Mode and when windows cover the desktop, and offers three animation levels: all, edges only, off. On a MacBook Air M4 at 3440 x 1440 the full animation costs 1.7 to 2.6 ms of GPU time per frame; edges only costs 0.12 to 0.14 ms. It runs at 30 frames per second by default.
+
+It requires macOS 15 or later and is installed from GitHub Releases or with Homebrew: `brew tap digitaliq/tap`, `brew trust --tap digitaliq/tap`, `brew install --cask blackhole-wallpaper`. The app is not notarized by Apple, so macOS blocks the first start. Since macOS 15, right-click > Open no longer bypasses this; open the app once and click Open Anyway in System Settings > Privacy & Security, or run `xattr -dr com.apple.quarantine /Applications/BlackHoleWallpaper.app`.
+
+The app only contacts api.github.com and GitHub's download servers to check for and fetch updates, and you can switch it off. It checks at most once a day and never in Low Power Mode. It has no analytics. Homebrew installs are updated with `brew upgrade --cask blackhole-wallpaper`.
+
+## Links
+
+- [Website](https://digitaliq.github.io/blackhole-wallpaper/)
+- [Website, Deutsch](https://digitaliq.github.io/blackhole-wallpaper/de/)
+- [Download, latest release](https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest)
+- [Source code](https://github.com/DigitalIQ/blackhole-wallpaper)
