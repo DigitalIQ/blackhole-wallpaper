@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 cask "blackhole-wallpaper" do
-  version "1.0.0"
-  sha256 "7d6faab019c677a1af005618ecd6fc72050cf8ed19072c68cc11e527f17570ed"
+  version "1.0.1"
+  sha256 "e41bb840f843d9bd1162feab73f74b747c1956ee2490c175a6e20eead986ae91"
 
   url "https://github.com/DigitalIQ/blackhole-wallpaper/releases/download/v#{version}/BlackHoleWallpaper-#{version}.dmg"
   name "Black Hole Wallpaper"
