@@ -39,7 +39,7 @@ Animierter Schreibtisch-Hintergrund für macOS: ein drehendes Schwarzes Loch mit
 
 ### Aus der DMG
 
-1. `BlackHoleWallpaper-1.0.0.dmg` von der [Release-Seite](https://github.com/DigitalIQ/blackhole-wallpaper/releases) laden.
+1. Die neueste `BlackHoleWallpaper-<Version>.dmg` von der [Release-Seite](https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest) laden.
 2. Öffnen und `BlackHoleWallpaper.app` auf den Ordner Programme ziehen.
 3. Optional: `Schwarzes Loch.saver` doppelklicken, das installiert den Bildschirmschoner. Er steht dann in den Systemeinstellungen unter Bildschirmschoner.
 

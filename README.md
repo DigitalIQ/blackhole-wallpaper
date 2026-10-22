@@ -40,7 +40,7 @@ A live desktop wallpaper for macOS: a spinning black hole with real gravitationa
 
 ### From the DMG
 
-1. Download `BlackHoleWallpaper-1.0.0.dmg` from the [releases page](https://github.com/DigitalIQ/blackhole-wallpaper/releases).
+1. Download the newest `BlackHoleWallpaper-<version>.dmg` from the [releases page](https://github.com/DigitalIQ/blackhole-wallpaper/releases/latest).
 2. Open it and drag `BlackHoleWallpaper.app` onto the Applications folder.
 3. Optional: double-click `Schwarzes Loch.saver` to install the screen saver. It then shows up in System Settings under Screen Saver.
 
