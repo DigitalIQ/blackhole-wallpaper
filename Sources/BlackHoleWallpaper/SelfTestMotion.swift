@@ -92,6 +92,7 @@ extension SelfTest {
             c(a < b && b <= 0, "Bewegung: Ankunft kommt mit der Nase voran von hinten und bremst")
         }
         failed += arrivalChecks(check)
+        failed += bandHeadingChecks(check)
         if let moon = ObjectCatalog.variant("moon", "grey")?.make(1) {
             c(moon.param("locked") == 1, "Bewegung: Monde sind gebunden")
         }
@@ -185,13 +186,68 @@ extension SelfTest {
                 let steps = zip(noses.dropFirst(), noses).map { $0 - $1 }
                 let along = zip(steps, heads).map { simd_dot($0, $1) }
                 let side = zip(steps, heads).map { abs($0.x * $1.y - $0.y * $1.x) }
-                // The band runs straight across while the 3/4 view tilts the nose a little on the screen; the
-                // arrival may not add to that angle (no slide sideways), only speed along the nose.
+                // The arrival may not add an angle between nose and motion (no slide sideways), only speed
+                // along the nose. bandHeadingChecks holds the nose on the path itself.
                 let slip = zip(side, along).map { atan2f($0, $1) }
                 let cruise = slip.last ?? 0
                 let ok = noses.count > 100 && along.allSatisfy { $0 > 0 } && slip.allSatisfy { $0 <= cruise + 0.035 }
                     && zip(along.dropFirst(), along).allSatisfy { $0 <= $1 * 1.0005 + 1e-4 }
                 c2(ok, "Ankunft \(eid) am Rand \(edge), nach \(dir): Nase voran, kein Seitwärts, bremst monoton")
+            }
+        }
+        return failed
+    }
+
+    /// Ships on a band: the nose on the screen points along the motion on the screen, within 2 degrees, in the
+    /// 3/4 view of their yaw and pitch, while banking through the wobble, on arrival and on departure. Both
+    /// bands, both directions, against the analytic screen velocity and the measured step of the position.
+    static func bandHeadingChecks(_ c: (Bool, String) -> Void) -> Int {
+        var failed = 0
+        func c2(_ ok: Bool, _ what: String) { c(ok, what); if !ok { failed += 1 } }
+        var look = Look()
+        look.objects.items = []
+        let layout = ScreenLayout(holeX: 0.5, holeY: 0.5, topBar: 24, bottomBar: 70)
+        let cam = CamFrame(look: look, layout: layout, width: 1720, height: 720)
+        let lim = cosf(2 * .pi / 180)
+        // (variant, event, yaw, pitch); nil keeps the design's attitude.
+        let cases: [(String, String, Float?, Float?)] = [
+            ("enterprise", "warp", nil, nil), ("falcon", "hyperspace", nil, nil), ("xwing", "hyperspace", -55, 15),
+            ("serenity", "fullburn", nil, nil), ("enterprise", "warp", -62, 45), ("falcon", "hyperspace", 150, 30),
+        ]
+        for (ship, eid, yaw, pitch) in cases {
+            guard var o = ObjectCatalog.variant("ship", ship)?.make(9) else { c2(false, "Nase am Rand: \(ship) fehlt"); continue }
+            o.events.on = true; o.events.kinds = [eid]
+            if let yaw { o.params["yaw"] = yaw }
+            if let pitch { o.params["pitch"] = pitch }
+            for (edge, dir) in [("top", "right"), ("top", "left"), ("bottom", "right"), ("bottom", "left")] {
+                o.motion.mode = .edge; o.motion.edge = edge; o.motion.direction = dir
+                o.motion.wobble = 1.5; o.motion.edgeGap = 5
+                let sys = ObjectSystem()
+                let rp = max(o.size, 1) * 0.5
+                guard let sch = sys.edgeSchedule(o, list: ObjectSystem.shipEvents(o), cam: cam, pxScale: 1, edgeTime: 0, sizePx: rp)
+                else { c2(false, "Nase am Rand: kein Lauf"); continue }
+                let end = sch.leave + Double(sch.spec.duration)
+                var worstV: Float = 1, worstStep: Float = 1, n = 0, banked = false
+                func at(_ t: Float) -> Placement? { sys.place(o, look: look, cam: cam, layout: layout, pxScale: 1, edgeTime: t, parent: nil) }
+                for i in 0...600 {
+                    let t = Float(end * Double(i) / 600)
+                    guard let pl = at(t), let a = at(t - 0.005), let b = at(t + 0.005) else { continue }
+                    let (ev, hidden) = sys.shipEvent(o, cam: cam, pxScale: 1, edgeTime: t, sizePx: rp)
+                    if hidden || !(ev?.look.visible ?? true) { continue }
+                    let ez = simd_normalize(cam.pos - pl.world)
+                    let ex = simd_normalize(simd_cross(cam.up, ez))
+                    let R = sys.shipRotation(o, pl: pl, ex: ex, ey: simd_cross(ez, ex), ez: ez)
+                    let f = R * SIMD3<Float>(1, 0, 0)
+                    let nose = simd_normalize(SIMD2(f.x, -f.y))
+                    worstV = min(worstV, simd_dot(nose, simd_normalize(pl.screenVel)))
+                    worstStep = min(worstStep, simd_dot(nose, simd_normalize(b.screen! - a.screen!)))
+                    banked = banked || abs(pl.screenVel.y) > 2   // the path really turns somewhere
+                    n += 1
+                }
+                let deg = acosf(min(min(worstV, worstStep), 1)) * 180 / .pi
+                c2(n > 300 && banked && worstV > lim && worstStep > lim,
+                   String(format: "Nase am Rand: %@ (%@) %@ nach %@, Nase längs der Bewegung (höchstens %.2f°)",
+                          ship, eid, edge == "top" ? "oben" : "unten", dir == "right" ? "rechts" : "links", deg))
             }
         }
         return failed

@@ -248,19 +248,28 @@ extension ObjectSystem {
         }
         // On the screen: nose to the right (or left when running leftwards), top up, then yaw and pitch.
         var yaw = o.param("yaw") * .pi / 180
+        let banded = pl.edge && flies && abs(pl.screenVel.x) > 1e-3
+        // On a band the nose points ahead: a yaw past 90° would fly tail first, so mirror it to the front.
+        if banded && cosf(yaw) < 0 { yaw = .pi - yaw }
         if pl.edge && simd_dot(pl.vel, ex) < 0 { yaw = .pi - yaw }
         let pitch = o.param("pitch") * .pi / 180
         let base = simd_float3x3(columns: (SIMD3(1, 0, 0), SIMD3(0, 0, -1), SIMD3(0, 1, 0)))
         let ry = simd_float3x3(simd_quatf(angle: yaw, axis: SIMD3(0, 1, 0)))
         let rx = simd_float3x3(simd_quatf(angle: pitch, axis: SIMD3(1, 0, 0)))
-        if pl.edge && flies && abs(pl.screenVel.x) > 1e-3 {
+        if banded {
             // Nose along the path on the screen, and a slight bank into each turn, as in the films.
+            // Yaw and pitch together tilt the projected nose off the horizontal (yaw -32°, pitch 22° by about 12°
+            // down), so the turn in the screen plane goes from that projected nose to the path, not from the
+            // horizontal. Turning about the view axis keeps the 3/4 look; the bank turns about the nose itself.
             let v = pl.screenVel, a = pl.screenAcc
             let sx: Float = v.x < 0 ? -1 : 1
-            let climb = atan2f(-v.y * sx, abs(v.x))
             let lat = (v.x * a.y - v.y * a.x) / max(simd_length(v), 1)
             let bank = min(max(lat / 40, -1), 1) * 0.45 * sx
-            let rz = simd_float3x3(simd_quatf(angle: climb * sx, axis: SIMD3(0, 0, 1)))
+            let f = rx * ry * base * SIMD3<Float>(1, 0, 0)
+            let n = SIMD2(f.x, f.y), d = SIMD2(v.x, -v.y)
+            let turn = simd_length(n) < 1e-4 ? atan2f(-v.y * sx, abs(v.x)) * sx
+                : atan2f(n.x * d.y - n.y * d.x, simd_dot(n, d))
+            let rz = simd_float3x3(simd_quatf(angle: turn, axis: SIMD3(0, 0, 1)))
             let rb = simd_float3x3(simd_quatf(angle: bank, axis: SIMD3(1, 0, 0)))
             return rz * rx * ry * base * rb * roll * spin
         }

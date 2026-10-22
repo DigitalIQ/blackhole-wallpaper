@@ -764,9 +764,7 @@ Selbsttest (`SelfTestMotion.arrivalChecks`): für jedes Ereignis läuft die Nase
 
 Kosten (`--bench-ab`, SciFi-Hafen, 3440 x 1440, alt und neu im Wechsel): alt +0,11 und −0,29 ms, neu +0,00 und −0,16 ms, im Rauschen. Mehr Pixel kostet nur ein laufender Wirbel (Quadrat etwa 2,7-mal so groß, für 1,3 bis 2,8 s). Presets ohne Objekte pixelgleich zu `referenz/`.
 
-Offen:
-
-- Am Rand zeigt die Dreiviertelansicht die Nase um gut 10 Grad geneigt, während das Band waagrecht läuft. Das war schon so; die Ankunft fügt keinen Winkel hinzu.
+Nase am Rand (2026-10-22, Version 1.0.1): Drehung und Neigung kippten die Nase auf dem Schirm um etwa 12 Grad, die Kurve setzte aber an der Waagrechten an (nach links sogar mit falschem Vorzeichen); jetzt dreht `shipRotation` von der projizierten Nase auf die Bewegung, um die Blickachse, sodass die Dreiviertelansicht bleibt, belegt durch `SelfTestMotion.bandHeadingChecks` (höchstens 2 Grad, mit Kurven, Ankunft und Abflug) und `shots/nase/`.
 
 ### Qualitätsstufen
 

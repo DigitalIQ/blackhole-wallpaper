@@ -2,7 +2,7 @@
 # End-to-end test of the in-app updater, entirely inside .tmp/e2e. Touches neither the installed app,
 # nor ~/Library/Screen Savers, nor the real settings.json.
 #  1. Builds the current version as the "old" app plus screen saver and copies both to .tmp/e2e.
-#  2. Builds a DMG with a higher version (default 1.0.1, via BH_VERSION; the file VERSION stays as it is).
+#  2. Builds a DMG with a higher version (default: VERSION with the patch number plus one, via BH_VERSION; the file VERSION stays as it is).
 #  3. Writes a feed in the shape of the GitHub API that points to that DMG and its .sha256.
 #  4. Runs --update-check and --update-install on the copy, waits for the relaunch and checks the version.
 #  5. Quits the relaunched copy.
@@ -11,7 +11,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$PWD
 OLD=$(cat VERSION)
-NEW=${1:-1.0.1}
+NEW=${1:-$(echo "$OLD" | awk -F. '{ printf "%d.%d.%d", $1, $2, $3 + 1 }')}
 E2E=$ROOT/.tmp/e2e
 APP=$E2E/BlackHoleWallpaper.app
 SAVERS="$E2E/Screen Savers"
