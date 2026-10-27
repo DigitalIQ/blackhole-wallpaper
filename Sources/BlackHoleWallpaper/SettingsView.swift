@@ -5,6 +5,7 @@ import SwiftUI
 extension Notification.Name {
     static let restoreWallpapers = Notification.Name("BlackHoleRestoreWallpapers")
     static let refreshStills = Notification.Name("BlackHoleRefreshStills")
+    static let tidyWallpaperCache = Notification.Name("BlackHoleTidyWallpaperCache")
 }
 
 extension Store {
@@ -755,6 +756,20 @@ struct EnergyTab: View {
                 }
                 Text(L("macOS zeigt auf dem Sperrbildschirm und in Mission Control das echte Hintergrundbild. Die App setzt dort ein Standbild vom Loch, damit nichts springt."))
                     .font(.caption).foregroundStyle(.secondary)
+                Button(L("Alte Standbilder aus dem macOS-Cache löschen")) {
+                    NotificationCenter.default.post(name: .tidyWallpaperCache, object: nil)
+                }
+                Text(L("macOS legt für jedes Standbild eine Kopie von einigen MB an und löscht sie nie. Die App räumt ihre alten Kopien auf. Dafür fragt macOS einmal, ob die App auf Daten anderer Apps zugreifen darf. Nach einem Update fragt macOS erneut."))
+                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                if store.cacheAccess == false {
+                    Text(L("Kein Zugriff: Alte Standbilder bleiben liegen. Erlaube den Zugriff, wenn macOS fragt, oder gib der App Festplattenvollzugriff."))
+                        .font(.caption).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                    Button(L("Festplattenvollzugriff öffnen")) {
+                        if let u = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
+                            NSWorkspace.shared.open(u)
+                        }
+                    }
+                }
             }
             Section(L("Bildschirmschoner")) {
                 Text(L("Der Bildschirmschoner „Schwarzes Loch“ zeigt das Loch live. Wähle ihn in den Systemeinstellungen unter Bildschirmschoner aus."))

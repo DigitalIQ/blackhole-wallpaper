@@ -22,18 +22,27 @@ final class Stills {
     }
 
     /// macOS's wallpaper agent turns every picture it is given into a bitmap of several MB in
-    /// its cache and never drops the old ones. Each file name starts with the SHA-256 of the
-    /// picture's path, so ours can be found.
+    /// its cache and never drops the old ones, even when the picture itself is deleted. Each
+    /// file name starts with the SHA-256 of the picture's path, so ours can be found.
+    /// The cache sits in another app's container: the first read makes macOS ask the user.
     static let agentCache = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Containers/com.apple.wallpaper.agent/Data/Library/Caches/com.apple.wallpaper.caches/extension-com.apple.wallpaper.extension.image")
 
-    /// Keeps only the newest cache bitmap of each still in `stills`; others in the cache stay. Returns how many went.
+    /// Keeps only the newest cache bitmap of each still in `stills`; others in the cache stay.
+    /// Returns how many went, nil when macOS refused access. Without stills the cache is not touched.
     @discardableResult
-    static func pruneAgentCache(stills: URL, cache: URL = agentCache) -> Int {
+    static func pruneAgentCache(stills: URL, cache: URL = agentCache) -> Int? {
         let fm = FileManager.default
-        guard let ours = try? fm.contentsOfDirectory(atPath: stills.path),
-              let cached = try? fm.contentsOfDirectory(at: cache, includingPropertiesForKeys: [.contentModificationDateKey])
-        else { return 0 }
+        let ours = (try? fm.contentsOfDirectory(atPath: stills.path)) ?? []
+        if ours.isEmpty { return 0 }
+        let cached: [URL]
+        do {
+            cached = try fm.contentsOfDirectory(at: cache, includingPropertiesForKeys: [.contentModificationDateKey])
+        } catch CocoaError.fileReadNoSuchFile {
+            return 0
+        } catch {
+            return nil
+        }
         func date(_ u: URL) -> Date { (try? u.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast }
         var removed = 0
         for name in ours {
@@ -45,15 +54,19 @@ final class Stills {
         return removed
     }
 
-    private func pruneSoon() {
+    /// Runs only while the still is on or on the user's request, so the access question
+    /// never comes up for someone who does not use stills.
+    func pruneSoon() {
         let stills = dir
-        DispatchQueue.global(qos: .utility).async { Self.pruneAgentCache(stills: stills) }
+        DispatchQueue.global(qos: .utility).async { [store] in
+            let result = Self.pruneAgentCache(stills: stills)
+            DispatchQueue.main.async { store.cacheAccess = result != nil }
+        }
     }
 
     /// Re-arms the timer after a settings change; refreshes soon when the look changed.
     func settingsChanged(wallpapers: [Wallpaper], soon: Bool) {
         timer?.invalidate()
-        pruneSoon()
         guard store.settings.stillWallpaper else {
             due = false
             // Switched off: the desktop goes back to what it was, as with the restore button.

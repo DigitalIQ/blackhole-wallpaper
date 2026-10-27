@@ -14,6 +14,8 @@ final class Store: ObservableObject {
     @Published var editingID: String = "strudel"
     /// Screen the settings window edits; nil means all connected screens.
     @Published var editScreen: String?
+    /// Whether macOS let the app tidy its wallpaper cache; nil until the app tried.
+    @Published var cacheAccess: Bool?
     /// Keys of the connected screens. The self-test swaps in made-up ones.
     var connectedKeys: () -> [String] = { NSScreen.screens.map(Store.key(for:)) }
     /// Short screen name for preset copies, e.g. "Ultrawide".

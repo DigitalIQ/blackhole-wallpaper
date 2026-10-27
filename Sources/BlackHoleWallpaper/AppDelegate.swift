@@ -87,6 +87,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             guard let self else { return }
             self.stills.refresh(self.wallpapers)
         }
+        nc.addObserver(forName: .tidyWallpaperCache, object: nil, queue: .main) { [weak self] _ in
+            self?.stills.pruneSoon()
+        }
         // Day drift moves slowly; a new look every five minutes is plenty.
         driftTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             guard let self, self.store.settings.dayDrift else { return }

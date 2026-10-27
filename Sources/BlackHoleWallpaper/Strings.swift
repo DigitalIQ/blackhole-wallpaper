@@ -284,6 +284,12 @@ extension Loc {
         "Altes Hintergrundbild zurückholen": "Restore Previous Wallpaper",
         "macOS zeigt auf dem Sperrbildschirm und in Mission Control das echte Hintergrundbild. Die App setzt dort ein Standbild vom Loch, damit nichts springt.":
             "macOS shows the real wallpaper on the lock screen and in Mission Control. The app puts a still of the hole there so nothing jumps.",
+        "Alte Standbilder aus dem macOS-Cache löschen": "Delete Old Stills from the macOS Cache",
+        "macOS legt für jedes Standbild eine Kopie von einigen MB an und löscht sie nie. Die App räumt ihre alten Kopien auf. Dafür fragt macOS einmal, ob die App auf Daten anderer Apps zugreifen darf. Nach einem Update fragt macOS erneut.":
+            "macOS keeps a copy of several MB for every still and never deletes it. The app removes its old copies. For this, macOS asks once whether the app may access data from other apps. After an update, macOS asks again.",
+        "Kein Zugriff: Alte Standbilder bleiben liegen. Erlaube den Zugriff, wenn macOS fragt, oder gib der App Festplattenvollzugriff.":
+            "No access: old stills stay on the disk. Allow access when macOS asks, or give the app Full Disk Access.",
+        "Festplattenvollzugriff öffnen": "Open Full Disk Access",
         "Bildschirmschoner": "Screen Saver",
         "Der Bildschirmschoner „Schwarzes Loch“ zeigt das Loch live. Wähle ihn in den Systemeinstellungen unter Bildschirmschoner aus.":
             "The “Black Hole Wallpaper” screen saver shows the hole live. Choose it in System Settings under Screen Saver.",

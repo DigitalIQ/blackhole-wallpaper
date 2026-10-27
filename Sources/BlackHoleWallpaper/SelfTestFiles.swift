@@ -106,6 +106,10 @@ extension SelfTest {
             try? Data("bmp".utf8).write(to: u)
             try? fm.setAttributes([.modificationDate: Date(timeIntervalSinceNow: Double(i - 10) * 60)], ofItemAtPath: u.path)
         }
+        c(Stills.pruneAgentCache(stills: dir.appendingPathComponent("leer"), cache: dir.appendingPathComponent("gesperrt")) == 0,
+          "Wallpaper-Cache: ohne Standbilder wird der Cache nicht gelesen")
+        c(Stills.pruneAgentCache(stills: stills, cache: still) == nil,
+          "Wallpaper-Cache: nicht lesbarer Cache meldet fehlenden Zugriff")
         let removed = Stills.pruneAgentCache(stills: stills, cache: cache)
         let left = ((try? fm.contentsOfDirectory(atPath: cache.path)) ?? []).sorted()
         c(removed == 2 && left == [names[2], names[3]].sorted(),
