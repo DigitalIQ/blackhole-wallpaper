@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 extension SelfTest {
@@ -89,6 +90,26 @@ extension SelfTest {
             c(!p.isRunning && p.terminationStatus == code && read("settings.json") == before && read("settings.backup-1.json") == before1,
               "Schalter \(arg): Hilfe, Exit-Code \(code), settings.json unverändert")
         }
+
+        // 5. Wallpaper cache: of each still only the newest bitmap stays, foreign files stay.
+        try? fm.removeItem(at: dir)
+        let stills = dir.appendingPathComponent("Application Support/Stills", isDirectory: true)
+        let cache = dir.appendingPathComponent("cache", isDirectory: true)
+        try? fm.createDirectory(at: stills, withIntermediateDirectories: true)
+        try? fm.createDirectory(at: cache, withIntermediateDirectories: true)
+        let still = stills.appendingPathComponent("KEY-a.png")
+        try? Data("png".utf8).write(to: still)
+        let prefix = SHA256.hash(data: Data(still.path.utf8)).map { String(format: "%02x", $0) }.joined()
+        let names = ["\(prefix)-3840-0-old.bmp", "\(prefix)-3840-0-mid.bmp", "\(prefix)-3840-0-new.bmp", "ffff-3840-0-fremd.bmp"]
+        for (i, n) in names.enumerated() {
+            let u = cache.appendingPathComponent(n)
+            try? Data("bmp".utf8).write(to: u)
+            try? fm.setAttributes([.modificationDate: Date(timeIntervalSinceNow: Double(i - 10) * 60)], ofItemAtPath: u.path)
+        }
+        let removed = Stills.pruneAgentCache(stills: stills, cache: cache)
+        let left = ((try? fm.contentsOfDirectory(atPath: cache.path)) ?? []).sorted()
+        c(removed == 2 && left == [names[2], names[3]].sorted(),
+          "Wallpaper-Cache: zwei alte Bilder weg, neuestes und fremdes bleiben (\(left.count) übrig)")
         return failed
     }
 }

@@ -1,4 +1,5 @@
 import AppKit
+import CryptoKit
 
 /// Puts a still of the live picture on the real desktop picture, so the lock screen and
 /// Mission Control match. Remembers what was there before so it can be put back.
@@ -20,10 +21,45 @@ final class Stills {
         return d
     }
 
+    /// macOS's wallpaper agent turns every picture it is given into a bitmap of several MB in
+    /// its cache and never drops the old ones. Each file name starts with the SHA-256 of the
+    /// picture's path, so ours can be found.
+    static let agentCache = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Library/Containers/com.apple.wallpaper.agent/Data/Library/Caches/com.apple.wallpaper.caches/extension-com.apple.wallpaper.extension.image")
+
+    /// Keeps only the newest cache bitmap of each still in `stills`; others in the cache stay. Returns how many went.
+    @discardableResult
+    static func pruneAgentCache(stills: URL, cache: URL = agentCache) -> Int {
+        let fm = FileManager.default
+        guard let ours = try? fm.contentsOfDirectory(atPath: stills.path),
+              let cached = try? fm.contentsOfDirectory(at: cache, includingPropertiesForKeys: [.contentModificationDateKey])
+        else { return 0 }
+        func date(_ u: URL) -> Date { (try? u.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast }
+        var removed = 0
+        for name in ours {
+            let hash = SHA256.hash(data: Data(stills.appendingPathComponent(name).path.utf8))
+            let prefix = hash.map { String(format: "%02x", $0) }.joined() + "-"
+            let mine = cached.filter { $0.lastPathComponent.hasPrefix(prefix) }.sorted { date($0) > date($1) }
+            for old in mine.dropFirst() where (try? fm.removeItem(at: old)) != nil { removed += 1 }
+        }
+        return removed
+    }
+
+    private func pruneSoon() {
+        let stills = dir
+        DispatchQueue.global(qos: .utility).async { Self.pruneAgentCache(stills: stills) }
+    }
+
     /// Re-arms the timer after a settings change; refreshes soon when the look changed.
     func settingsChanged(wallpapers: [Wallpaper], soon: Bool) {
         timer?.invalidate()
-        guard store.settings.stillWallpaper else { due = false; return }
+        pruneSoon()
+        guard store.settings.stillWallpaper else {
+            due = false
+            // Switched off: the desktop goes back to what it was, as with the restore button.
+            if !store.settings.originalWallpapers.isEmpty { restore(wallpapers) }
+            return
+        }
         let minutes = max(store.settings.stillInterval, 5)
         timer = Timer.scheduledTimer(withTimeInterval: minutes * 60, repeats: true) { [weak self] _ in
             self?.refreshOrDefer(wallpapers)
@@ -52,6 +88,8 @@ final class Stills {
 
     func refresh(_ wallpapers: [Wallpaper]) {
         guard store.settings.stillWallpaper else { return }
+        // The agent writes its bitmap a moment after each change, so the last round is tidied now.
+        pruneSoon()
         let ws = NSWorkspace.shared
         // macOS caches by URL, so alternate between two file names.
         flip.toggle()
@@ -79,6 +117,7 @@ final class Stills {
         }
         store.settings.stillWallpaper = false
         store.settings.originalWallpapers = [:]
+        pruneSoon()
     }
 }
 
