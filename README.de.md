@@ -297,6 +297,10 @@ BH_UPDATE_FEED=/pfad/feed.json BH_SETTINGS=/pfad/kopie.json BlackHoleWallpaper.a
 
 `--update-check` zeigt, was der Updater tun würde, und ändert nichts. `--update-install` macht es ohne Fenster. `BH_UPDATE_FEED` nimmt einen Dateipfad oder eine http(s)- oder file-URL in der Form der GitHub-Antwort; damit dürfen die Dateien von überall kommen, ohne nur per https von github.com. `BH_SAVER_DIR` ersetzt `~/Library/Screen Savers`; mit `BH_SETTINGS` und ohne `BH_SAVER_DIR` bleibt der installierte Bildschirmschoner unberührt. `scripts/e2e-update.sh` baut die aktuelle Version nach `.tmp/e2e`, baut eine DMG mit höherer Version (`BH_VERSION`, die Datei `VERSION` bleibt), aktualisiert die Kopie über einen lokalen Feed, prüft den Neustart mit der neuen Version und beendet sie.
 
+## Unterstützen
+
+Wenn dir Black Hole Wallpaper hilft, kannst du mir [einen Kaffee spendieren](https://buymeacoffee.com/manuel_8472). Black Hole Wallpaper bleibt so oder so kostenlos.
+
 ## Lizenz
 
 MIT, siehe [LICENSE](LICENSE). Copyright 2026 DigitalIQ.

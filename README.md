@@ -220,6 +220,10 @@ Translating the interface is described in `docs/uebersetzen.md` (German). Design
 - `Stills.swift`: still image as desktop picture and the change over the day.
 - `Saver/BlackHoleSaverView.swift`: the screen saver. `scripts/build-saver.sh` builds it from the same renderer files.
 
+## Support
+
+If Black Hole Wallpaper is useful to you, you can [buy me a coffee](https://buymeacoffee.com/manuel_8472). Black Hole Wallpaper stays free either way.
+
 ## License
 
 MIT, see [LICENSE](LICENSE). Copyright 2026 DigitalIQ.
