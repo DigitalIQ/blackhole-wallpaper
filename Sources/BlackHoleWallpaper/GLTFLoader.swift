@@ -30,6 +30,9 @@ enum GLTFLoader {
         return uris.filter { !$0.hasPrefix("data:") }.compactMap { $0.removingPercentEncoding }
     }
 
+    /// For the self-test: whether `relative` stays inside `dir`.
+    static func isInside(_ dir: URL, _ relative: String) -> Bool { Doc.inside(dir, relative) != nil }
+
     // MARK: - Container
 
     private static func read(_ url: URL) throws -> MeshData {
@@ -79,6 +82,20 @@ enum GLTFLoader {
 
         func list(_ k: String) -> [JSON] { (root[k] as? [JSON]) ?? [] }
 
+        /// More elements than any model we can draw; also keeps `count * comps` far from overflow.
+        static let maxElements = 1 << 26
+
+        /// True when `count` elements of `element` bytes, `stride` apart and starting at `offset`,
+        /// lie completely inside `length` bytes. Rejects negative values and arithmetic overflow.
+        static func fits(offset: Int, count: Int, stride: Int, element: Int, in length: Int) -> Bool {
+            guard offset >= 0, count >= 0, stride > 0, element > 0, offset <= length else { return false }
+            if count == 0 { return true }
+            let (span, o1) = (count - 1).multipliedReportingOverflow(by: stride)
+            let (last, o2) = offset.addingReportingOverflow(span)
+            let (end, o3) = last.addingReportingOverflow(element)
+            return !o1 && !o2 && !o3 && end <= length
+        }
+
         static func num(_ v: Any?) -> Double? { (v as? NSNumber)?.doubleValue }
         static func int(_ v: Any?) -> Int? { (v as? NSNumber)?.intValue }
         static func floats(_ v: Any?) -> [Float]? { (v as? [Any])?.compactMap { num($0).map(Float.init) } }
@@ -91,14 +108,24 @@ enum GLTFLoader {
                 return d
             }
             let name = uri.removingPercentEncoding ?? uri
-            guard let d = try? Data(contentsOf: dir.appendingPathComponent(name)) else { throw LoadError(UIText.gltfMissingBuffer(name)) }
+            guard let file = Doc.inside(dir, name), let d = try? Data(contentsOf: file) else { throw LoadError(UIText.gltfMissingBuffer(name)) }
             return d
+        }
+
+        /// `relative` below `dir`, or nil when it would leave the folder (absolute path, "..", a symlink
+        /// out of it). A model only reads files that came along with it.
+        static func inside(_ dir: URL, _ relative: String) -> URL? {
+            guard !relative.isEmpty, !relative.hasPrefix("/"), !relative.contains("\0"),
+                  !relative.split(separator: "/").contains("..") else { return nil }
+            let base = dir.standardizedFileURL.resolvingSymlinksInPath().path
+            let file = dir.appendingPathComponent(relative).standardizedFileURL.resolvingSymlinksInPath()
+            return file.path.hasPrefix(base.hasSuffix("/") ? base : base + "/") ? file : nil
         }
 
         mutating func buffer(_ i: Int) throws -> Data {
             if let b = buffers[i] { return b }
             let bs = list("buffers")
-            guard i < bs.count else { throw LoadError(UIText.gltfBrokenData) }
+            guard i >= 0, i < bs.count else { throw LoadError(UIText.gltfBrokenData) }
             let d: Data
             if let uri = bs[i]["uri"] as? String { d = try resolve(uri) } else if let bin { d = bin } else { throw LoadError(UIText.gltfBrokenData) }
             buffers[i] = d
@@ -108,27 +135,33 @@ enum GLTFLoader {
         /// Bytes of a buffer view and its stride (0: packed).
         mutating func view(_ i: Int) throws -> (Data, Int) {
             let vs = list("bufferViews")
-            guard i < vs.count, let b = Doc.int(vs[i]["buffer"]) else { throw LoadError(UIText.gltfBrokenData) }
+            guard i >= 0, i < vs.count, let b = Doc.int(vs[i]["buffer"]) else { throw LoadError(UIText.gltfBrokenData) }
             let buf = try buffer(b)
             let off = Doc.int(vs[i]["byteOffset"]) ?? 0, len = Doc.int(vs[i]["byteLength"]) ?? 0
-            guard off >= 0, len >= 0, off + len <= buf.count else { throw LoadError(UIText.gltfBrokenData) }
+            // Subtraction instead of off + len, so huge values cannot overflow.
+            guard off >= 0, len >= 0, off <= buf.count, len <= buf.count - off else { throw LoadError(UIText.gltfBrokenData) }
             return (buf.subdata(in: off..<off + len), Doc.int(vs[i]["byteStride"]) ?? 0)
         }
 
         /// An accessor as floats, `comps` per element; normalised integers are scaled to 0...1 or -1...1.
         mutating func floats(_ a: Int) throws -> (values: [Float], comps: Int) {
             let acc = list("accessors")
-            guard a < acc.count, let count = Doc.int(acc[a]["count"]), let ct = Doc.int(acc[a]["componentType"]),
+            guard a >= 0, a < acc.count, let count = Doc.int(acc[a]["count"]), let ct = Doc.int(acc[a]["componentType"]),
                   let type = acc[a]["type"] as? String else { throw LoadError(UIText.gltfBrokenData) }
             let comps = ["SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT2": 4, "MAT3": 9, "MAT4": 16][type] ?? 1
             let size = [5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4][ct] ?? 4
             let norm = (acc[a]["normalized"] as? Bool) ?? false
-            var out = [Float](repeating: 0, count: count * comps)
-            guard let vi = Doc.int(acc[a]["bufferView"]) else { return (out, comps) }    // all zero
+            guard count >= 0, count <= Doc.maxElements else { throw LoadError(UIText.gltfBrokenData) }
+            guard let vi = Doc.int(acc[a]["bufferView"]) else { return ([Float](repeating: 0, count: count * comps), comps) }    // all zero
             let (d, stride0) = try view(vi)
             let off = Doc.int(acc[a]["byteOffset"]) ?? 0
             let stride = stride0 > 0 ? stride0 : size * comps
-            guard count == 0 || off + (count - 1) * stride + size * comps <= d.count else { throw LoadError(UIText.gltfBrokenData) }
+            // The raw reads below are not bounds checked in release builds, so every byte they touch must
+            // lie inside the view: no negative offset, no overflow, the last element ends inside.
+            guard Doc.fits(offset: off, count: count, stride: stride, element: size * comps, in: d.count) else {
+                throw LoadError(UIText.gltfBrokenData)
+            }
+            var out = [Float](repeating: 0, count: count * comps)
             d.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
                 for e in 0..<count {
                     for c in 0..<comps {
@@ -151,12 +184,13 @@ enum GLTFLoader {
 
         mutating func indices(_ a: Int) throws -> [UInt32] {
             let acc = list("accessors")
-            guard a < acc.count, let count = Doc.int(acc[a]["count"]), let ct = Doc.int(acc[a]["componentType"]) else { throw LoadError(UIText.gltfBrokenData) }
+            guard a >= 0, a < acc.count, let count = Doc.int(acc[a]["count"]), let ct = Doc.int(acc[a]["componentType"]) else { throw LoadError(UIText.gltfBrokenData) }
+            guard count >= 0, count <= Doc.maxElements else { throw LoadError(UIText.gltfBrokenData) }
             guard let vi = Doc.int(acc[a]["bufferView"]) else { return [UInt32](repeating: 0, count: count) }
             let (d, _) = try view(vi)
             let off = Doc.int(acc[a]["byteOffset"]) ?? 0
             let size = ct == 5125 ? 4 : ct == 5123 ? 2 : 1
-            guard off + count * size <= d.count else { throw LoadError(UIText.gltfBrokenData) }
+            guard Doc.fits(offset: off, count: count, stride: size, element: size, in: d.count) else { throw LoadError(UIText.gltfBrokenData) }
             return d.withUnsafeBytes { raw in
                 (0..<count).map { e -> UInt32 in
                     let o = off + e * size
@@ -175,12 +209,12 @@ enum GLTFLoader {
         mutating func texture(_ info: Any?, fine: Bool = true) -> ModelTexture? {
             guard let ti = info as? JSON, let t = Doc.int(ti["index"]) else { return nil }
             let ts = list("textures")
-            guard t < ts.count, let src = Doc.int(ts[t]["source"]) else { return nil }
+            guard t >= 0, t < ts.count, let src = Doc.int(ts[t]["source"]) else { return nil }
             if let cached = images[src] { return cached }
             let side = fine ? ModelTexture.maxSide : ModelTexture.maxSide / 2
             let ims = list("images")
             var tex: ModelTexture?
-            if src < ims.count {
+            if src >= 0, src < ims.count {
                 if let uri = ims[src]["uri"] as? String, let d = try? resolve(uri) { tex = ModelImage.texture(data: d, maxSide: side) }
                 else if let v = Doc.int(ims[src]["bufferView"]), let r = try? view(v) { tex = ModelImage.texture(data: r.0, maxSide: side) }
             }
@@ -192,7 +226,7 @@ enum GLTFLoader {
             var m = ModelMaterial()
             m.metal = 1; m.rough = 1
             let ms = list("materials")
-            guard let i, i < ms.count else {
+            guard let i, i >= 0, i < ms.count else {
                 // No material: glTF's default is a plain white, fully rough metal; a light grey satin reads better.
                 m.base = SIMD4(0.75, 0.75, 0.77, 1); m.metal = 0.2; m.rough = 0.5
                 return m
@@ -280,7 +314,7 @@ enum GLTFLoader {
 
         mutating func addMesh(_ mi: Int, _ world: simd_float4x4, _ out: inout MeshData, _ matIndex: inout [Int: Int]) throws {
             let meshes = list("meshes")
-            guard mi < meshes.count else { throw LoadError(UIText.gltfBrokenData) }
+            guard mi >= 0, mi < meshes.count else { throw LoadError(UIText.gltfBrokenData) }
             let m3 = simd_float3x3(SIMD3(world.columns.0.x, world.columns.0.y, world.columns.0.z),
                                    SIMD3(world.columns.1.x, world.columns.1.y, world.columns.1.z),
                                    SIMD3(world.columns.2.x, world.columns.2.y, world.columns.2.z))

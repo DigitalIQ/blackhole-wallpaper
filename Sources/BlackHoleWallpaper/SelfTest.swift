@@ -378,6 +378,37 @@ enum SelfTest {
         let draco = write("d.gltf", Data(doc("", extra: #","extensionsRequired":["KHR_draco_mesh_compression"]"#).utf8))
         if case .failure(let e) = GLTFLoader.load(draco) { c(e.description.contains("KHR_draco_mesh_compression"), "glTF: Pflicht-Erweiterung Draco gibt eine klare Meldung") }
         else { c(false, "glTF: Pflicht-Erweiterung Draco gibt eine klare Meldung") }
+
+        // Broken or hostile files: values that would read outside the buffer are refused, never read.
+        let embedded = doc(#","uri":"data:application/octet-stream;base64,\#(bin.base64EncodedString())""#)
+        func refused(_ name: String, _ text: String) -> Bool {
+            if case .failure = GLTFLoader.load(write(name, Data(text.utf8))) { return true }
+            return false
+        }
+        let position = #""bufferView":0,"componentType":5126"#
+        for off in [-4, -4096, -100_000_000] {
+            c(refused("neg\(-off).gltf", embedded.replacingOccurrences(of: position, with: #""bufferView":0,"byteOffset":\#(off),"componentType":5126"#)),
+              "glTF: negativer byteOffset \(off) wird abgelehnt")
+        }
+        c(refused("negcount.gltf", doc(#","uri":"data:application/octet-stream;base64,\#(bin.base64EncodedString())""#, count: -3)),
+          "glTF: negative Anzahl wird abgelehnt")
+        c(refused("huge.gltf", embedded.replacingOccurrences(of: position, with: #""bufferView":0,"byteOffset":9223372036854775000,"componentType":5126"#)),
+          "glTF: Überlauf beim byteOffset wird abgelehnt")
+        c(refused("negindex.gltf", embedded.replacingOccurrences(of: #""POSITION":0"#, with: #""POSITION":-1"#)),
+          "glTF: negativer Index wird abgelehnt")
+        c(refused("negview.gltf", embedded.replacingOccurrences(of: #""byteOffset":36,"byteLength":6"#, with: #""byteOffset":-8,"byteLength":6"#)),
+          "glTF: negativer byteOffset im Buffer-View wird abgelehnt")
+        // A model may only read files from its own folder.
+        let outsideDir = dir.appendingPathComponent("inner", isDirectory: true)
+        try? FileManager.default.createDirectory(at: outsideDir, withIntermediateDirectories: true)
+        try? bin.write(to: dir.appendingPathComponent("geheim.bin"))
+        let escape = outsideDir.appendingPathComponent("escape.gltf")
+        try? Data(doc(#","uri":"../geheim.bin""#).utf8).write(to: escape)
+        if case .failure = GLTFLoader.load(escape) { c(true, "glTF: Puffer außerhalb des Modellordners wird nicht gelesen") }
+        else { c(false, "glTF: Puffer außerhalb des Modellordners wird nicht gelesen") }
+        c(GLTFLoader.isInside(dir, "a/b.bin") && !GLTFLoader.isInside(dir, "../x") && !GLTFLoader.isInside(dir, "/etc/hosts")
+          && !GLTFLoader.isInside(dir, "a/../../x"), "glTF: Pfadprüfung für Modelldateien")
+
         // Import into the models folder: a .gltf with an external .bin goes into its own folder, also for the saver.
         let src = dir.appendingPathComponent("src", isDirectory: true)
         try? FileManager.default.createDirectory(at: src, withIntermediateDirectories: true)
