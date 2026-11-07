@@ -80,12 +80,13 @@ struct Release: Equatable {
                        draft: o["draft"] as? Bool ?? false, prerelease: o["prerelease"] as? Bool ?? false)
     }
 
-    /// The DMG of this version and its checksum file. Nil when one of them is missing.
-    var installFiles: (dmg: ReleaseAsset, sha: ReleaseAsset)? {
+    /// The DMG of this version, its checksum file and the signature of the checksum. Nil when one is missing.
+    var installFiles: (dmg: ReleaseAsset, sha: ReleaseAsset, sig: ReleaseAsset)? {
         let name = "BlackHoleWallpaper-\(versionString).dmg"
         guard let dmg = assets.first(where: { $0.name == name }),
-              let sha = assets.first(where: { $0.name == name + ".sha256" }) else { return nil }
-        return (dmg, sha)
+              let sha = assets.first(where: { $0.name == name + ".sha256" }),
+              let sig = assets.first(where: { $0.name == name + ".sha256.sig" }) else { return nil }
+        return (dmg, sha, sig)
     }
 
     /// The start of the release notes as plain text, for the settings page.
@@ -119,7 +120,7 @@ enum InstallMode: Equatable {
 }
 
 enum UpdateError: Error, Equatable {
-    case network(String), http(Int), badResponse, noAsset, untrusted, download(String), checksum, mount, appMissing,
+    case network(String), http(Int), badResponse, noAsset, unsigned, untrusted, download(String), checksum, mount, appMissing,
          wrongApp, signature, swap(String)
 
     var message: String {
@@ -127,7 +128,8 @@ enum UpdateError: Error, Equatable {
         case .network(let why): L("Keine Verbindung zu GitHub: %@", why)
         case .http(let code): L("GitHub antwortet mit Fehler %d.", code)
         case .badResponse: L("Die Antwort von GitHub ist nicht lesbar.")
-        case .noAsset: L("Zu dieser Version gibt es keine passende Image-Datei mit Prüfsumme.")
+        case .noAsset: L("Zu dieser Version gibt es keine passende Image-Datei mit Prüfsumme und Signatur.")
+        case .unsigned: L("Die Signatur des Updates ist ungültig. Das Update wurde nicht geladen.")
         case .untrusted: L("Die Datei liegt nicht bei GitHub. Das Update wurde nicht geladen.")
         case .download(let why): L("Download fehlgeschlagen: %@", why)
         case .checksum: L("Die Prüfsumme stimmt nicht. Das Update wurde nicht installiert.")
@@ -308,6 +310,34 @@ enum UpdateCore {
         guard let text = try? String(contentsOf: shaFile, encoding: .utf8), let want = expectedHash(text),
               let got = try? sha256(of: file), got == want else { throw UpdateError.checksum }
     }
+
+    // MARK: Signature
+
+    /// Public Ed25519 keys (raw, base64) whose signatures the updater accepts. The private key stays in
+    /// the keychain of the release machine (scripts/update-signing.swift). A second entry allows a key change.
+    /// The app is only signed ad hoc, so without this an update could come from anyone who can publish
+    /// a GitHub release of the project.
+    static let signingKeys = ["flcsLz7U+SqRzsUSrnrflXKEVeyHrTGZP9CzxS0vHhs="]
+
+    /// What the release script signs: file name and hash, so a signature fits only this one DMG.
+    static func signedMessage(dmgName: String, hash: String) -> Data { Data("\(dmgName)\n\(hash.lowercased())\n".utf8) }
+
+    /// True when `signature` (base64, as in the .sig file) signs dmgName and hash with one of `keys`.
+    static func validSignature(_ signature: String, dmgName: String, hash: String, keys: [String] = signingKeys) -> Bool {
+        guard let sig = Data(base64Encoded: signature.trimmingCharacters(in: .whitespacesAndNewlines)) else { return false }
+        let message = signedMessage(dmgName: dmgName, hash: hash)
+        return keys.contains { k in
+            guard let raw = Data(base64Encoded: k), let key = try? Curve25519.Signing.PublicKey(rawRepresentation: raw) else { return false }
+            return key.isValidSignature(sig, for: message)
+        }
+    }
+
+    /// Throws .unsigned unless sigFile holds a valid signature of the hash in shaFile for dmgName.
+    static func verifySignature(dmgName: String, shaFile: URL, sigFile: URL, keys: [String] = signingKeys) throws {
+        guard let text = try? String(contentsOf: shaFile, encoding: .utf8), let hash = expectedHash(text),
+              let sig = try? String(contentsOf: sigFile, encoding: .utf8),
+              validSignature(sig, dmgName: dmgName, hash: hash, keys: keys) else { throw UpdateError.unsigned }
+    }
 }
 
 /// Download, check, swap, relaunch. Blocking steps; run it off the main thread.
@@ -341,15 +371,19 @@ struct UpdateInstaller {
     func install(progress: @escaping (Step) -> Void) async throws {
         let fm = FileManager.default
         guard let files = release.installFiles else { throw UpdateError.noAsset }
-        guard UpdateCore.trusted(files.dmg.url, overridden: overridden), UpdateCore.trusted(files.sha.url, overridden: overridden)
+        guard [files.dmg.url, files.sha.url, files.sig.url].allSatisfy({ UpdateCore.trusted($0, overridden: overridden) })
         else { throw UpdateError.untrusted }
         try? fm.createDirectory(at: workDir, withIntermediateDirectories: true)
         let dmg = workDir.appendingPathComponent(files.dmg.name)
         let sha = workDir.appendingPathComponent(files.sha.name)
-        defer { try? fm.removeItem(at: dmg); try? fm.removeItem(at: sha) }
+        let sig = workDir.appendingPathComponent(files.sig.name)
+        defer { for f in [dmg, sha, sig] { try? fm.removeItem(at: f) } }
 
         progress(.download)
         try await UpdateCore.download(files.sha.url, to: sha)
+        try await UpdateCore.download(files.sig.url, to: sig)
+        // The signature first: an unsigned or forged release is not even downloaded.
+        try UpdateCore.verifySignature(dmgName: files.dmg.name, shaFile: sha, sigFile: sig)
         try await UpdateCore.download(files.dmg.url, to: dmg)
         progress(.verify)
         try UpdateCore.verify(file: dmg, shaFile: sha)
@@ -621,8 +655,9 @@ enum UpdateCLI {
         if let f = r.installFiles {
             print("would download: \(f.dmg.url.absoluteString)")
             print("            and \(f.sha.url.absoluteString)")
+            print("            and \(f.sig.url.absoluteString)")
         } else {
-            print("would download: nothing, the release has no BlackHoleWallpaper-\(r.versionString).dmg with .sha256")
+            print("would download: nothing, the release has no BlackHoleWallpaper-\(r.versionString).dmg with .sha256 and .sha256.sig")
         }
         print("into: \(UpdateCore.workDir.path)")
         if let d = UpdateCore.saverDir {

@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 extension SelfTest {
@@ -21,6 +22,8 @@ extension SelfTest {
          "browser_download_url": "https://github.com/DigitalIQ/blackhole-wallpaper/releases/download/v1.0.1/BlackHoleWallpaper-1.0.1.zip"},
         {"name": "BlackHoleWallpaper-1.0.1.dmg.sha256", "size": 65, "content_type": "text/plain",
          "browser_download_url": "https://github.com/DigitalIQ/blackhole-wallpaper/releases/download/v1.0.1/BlackHoleWallpaper-1.0.1.dmg.sha256"},
+        {"name": "BlackHoleWallpaper-1.0.1.dmg.sha256.sig", "size": 89, "content_type": "text/plain",
+         "browser_download_url": "https://github.com/DigitalIQ/blackhole-wallpaper/releases/download/v1.0.1/BlackHoleWallpaper-1.0.1.dmg.sha256.sig"},
         {"name": "BlackHoleWallpaper-1.0.1.dmg", "size": 9100000, "content_type": "application/x-apple-diskimage",
          "browser_download_url": "https://github.com/DigitalIQ/blackhole-wallpaper/releases/download/v1.0.1/BlackHoleWallpaper-1.0.1.dmg"}
       ],
@@ -46,9 +49,9 @@ extension SelfTest {
 
         // The GitHub answer.
         guard let r = Release.parse(Data(releaseFixture.utf8)) else { c(false, "Update: Antwort von GitHub lesbar"); return failed }
-        c(r.tag == "v1.0.1" && r.versionString == "1.0.1" && !r.draft && !r.prerelease && r.assets.count == 4
+        c(r.tag == "v1.0.1" && r.versionString == "1.0.1" && !r.draft && !r.prerelease && r.assets.count == 5
             && r.page?.absoluteString == "https://github.com/DigitalIQ/blackhole-wallpaper/releases/tag/v1.0.1",
-          "Update: Antwort von GitHub gelesen (Tag, Seite, vier Dateien)")
+          "Update: Antwort von GitHub gelesen (Tag, Seite, fünf Dateien)")
         c(r.excerpt.hasPrefix("Quality: High is now the default") && !r.excerpt.contains("#") && !r.excerpt.contains("**"),
           "Update: Auszug der Release Notes ohne Überschriften und Markdown: \(r.excerpt.prefix(60))")
         c(Release.excerpt(String(repeating: "word ", count: 200)).count <= 242, "Update: Auszug ist kurz")
@@ -57,8 +60,12 @@ extension SelfTest {
 
         // Asset choice.
         let files = r.installFiles
-        c(files?.dmg.name == "BlackHoleWallpaper-1.0.1.dmg" && files?.sha.name == "BlackHoleWallpaper-1.0.1.dmg.sha256",
-          "Update: richtige DMG und Prüfsumme gewählt, nicht die alte DMG oder das ZIP")
+        c(files?.dmg.name == "BlackHoleWallpaper-1.0.1.dmg" && files?.sha.name == "BlackHoleWallpaper-1.0.1.dmg.sha256"
+            && files?.sig.name == "BlackHoleWallpaper-1.0.1.dmg.sha256.sig",
+          "Update: richtige DMG, Prüfsumme und Signatur gewählt, nicht die alte DMG oder das ZIP")
+        let noSig = Release(tag: r.tag, version: r.version, notes: "", page: nil,
+                            assets: r.assets.filter { !$0.name.hasSuffix(".sig") }, draft: false, prerelease: false)
+        c(noSig.installFiles == nil, "Update: ohne Signatur-Datei wird nichts installiert")
         let noSha = Release(tag: r.tag, version: r.version, notes: "", page: nil,
                             assets: r.assets.filter { !$0.name.hasSuffix(".sha256") }, draft: false, prerelease: false)
         c(noSha.installFiles == nil, "Update: ohne Prüfsummen-Datei wird nichts installiert")
@@ -102,6 +109,34 @@ extension SelfTest {
           "Update: falsche oder kaputte Prüfsumme bricht ab")
         do { try Data(wrong.utf8).write(to: sha); try UpdateCore.verify(file: file, shaFile: sha); c(false, "Update: Fehler bei falscher Prüfsumme") }
         catch { c(error as? UpdateError == .checksum, "Update: falsche Prüfsumme meldet „\(UpdateError.checksum.message)“") }
+
+        // Signature: a key made here stands in for the release key.
+        let key = Curve25519.Signing.PrivateKey()
+        let pub = [key.publicKey.rawRepresentation.base64EncodedString()]
+        let name = "BlackHoleWallpaper-1.0.1.dmg"
+        func signed(_ n: String, _ h: String, by k: Curve25519.Signing.PrivateKey = key) -> String {
+            ((try? k.signature(for: UpdateCore.signedMessage(dmgName: n, hash: h))) ?? Data()).base64EncodedString()
+        }
+        let good = signed(name, helloHash)
+        c(UpdateCore.validSignature(good + "\n", dmgName: name, hash: helloHash, keys: pub)
+            && UpdateCore.validSignature(good, dmgName: name, hash: helloHash.uppercased(), keys: pub),
+          "Update: gültige Signatur wird angenommen")
+        c(!UpdateCore.validSignature(good, dmgName: name, hash: wrong, keys: pub), "Update: Signatur passt nicht zu einer anderen Prüfsumme")
+        c(!UpdateCore.validSignature(good, dmgName: "BlackHoleWallpaper-1.0.0.dmg", hash: helloHash, keys: pub),
+          "Update: Signatur passt nicht zu einer anderen Version")
+        c(!UpdateCore.validSignature(signed(name, helloHash, by: Curve25519.Signing.PrivateKey()), dmgName: name, hash: helloHash, keys: pub),
+          "Update: Signatur mit fremdem Schlüssel wird abgelehnt")
+        c(!UpdateCore.validSignature("", dmgName: name, hash: helloHash, keys: pub) && !UpdateCore.validSignature("kaputt", dmgName: name, hash: helloHash, keys: pub),
+          "Update: leere oder kaputte Signatur wird abgelehnt")
+        c(!UpdateCore.validSignature(good, dmgName: name, hash: helloHash), "Update: Test-Schlüssel ist nicht der eingebaute Release-Schlüssel")
+        c(UpdateCore.signingKeys.allSatisfy { (Data(base64Encoded: $0)).flatMap { try? Curve25519.Signing.PublicKey(rawRepresentation: $0) } != nil },
+          "Update: eingebauter Release-Schlüssel ist ein gültiger Ed25519-Schlüssel")
+        let sig = dir.appendingPathComponent("x.dmg.sha256.sig")
+        try? Data((helloHash + "\n").utf8).write(to: sha)
+        try? Data(good.utf8).write(to: sig)
+        c((try? UpdateCore.verifySignature(dmgName: name, shaFile: sha, sigFile: sig, keys: pub)) != nil, "Update: Signatur-Datei wird geprüft")
+        do { try UpdateCore.verifySignature(dmgName: name, shaFile: sha, sigFile: sig); c(false, "Update: fremd signiertes Update wird abgelehnt") }
+        catch { c(error as? UpdateError == .unsigned, "Update: fremd signiertes Update meldet „\(UpdateError.unsigned.message)“") }
 
         // Homebrew and install mode.
         let cask = dir.appendingPathComponent("Caskroom/blackhole-wallpaper", isDirectory: true)

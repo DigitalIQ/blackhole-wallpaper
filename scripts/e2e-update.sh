@@ -28,7 +28,7 @@ ditto "build/Schwarzes Loch.saver" "$SAVERS/Schwarzes Loch.saver"
 
 echo "== 2. DMG with version $NEW"
 BH_VERSION=$NEW ./scripts/make-dmg.sh >/dev/null
-cp "build/BlackHoleWallpaper-$NEW.dmg" "build/BlackHoleWallpaper-$NEW.dmg.sha256" "$E2E/release/"
+cp "build/BlackHoleWallpaper-$NEW.dmg" "build/BlackHoleWallpaper-$NEW.dmg.sha256" "build/BlackHoleWallpaper-$NEW.dmg.sha256.sig" "$E2E/release/"
 echo "sha256 file: $(cat "$E2E/release/BlackHoleWallpaper-$NEW.dmg.sha256")"
 
 echo "== 3. feed and settings copy"
@@ -44,7 +44,9 @@ cat > "$E2E/feed.json" <<JSON
     {"name": "BlackHoleWallpaper-$NEW.dmg", "size": $(stat -f %z "$E2E/release/BlackHoleWallpaper-$NEW.dmg"),
      "browser_download_url": "file://$E2E/release/BlackHoleWallpaper-$NEW.dmg"},
     {"name": "BlackHoleWallpaper-$NEW.dmg.sha256", "size": 65,
-     "browser_download_url": "file://$E2E/release/BlackHoleWallpaper-$NEW.dmg.sha256"}
+     "browser_download_url": "file://$E2E/release/BlackHoleWallpaper-$NEW.dmg.sha256"},
+    {"name": "BlackHoleWallpaper-$NEW.dmg.sha256.sig", "size": 89,
+     "browser_download_url": "file://$E2E/release/BlackHoleWallpaper-$NEW.dmg.sha256.sig"}
   ]
 }
 JSON

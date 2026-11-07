@@ -12,7 +12,7 @@ STAGE="build/dmg"
 ./scripts/build-app.sh
 ./scripts/build-saver.sh
 
-rm -rf "$STAGE" "$DMG" "$DMG.sha256"
+rm -rf "$STAGE" "$DMG" "$DMG.sha256" "$DMG.sha256.sig"
 mkdir -p "$STAGE"
 cp -R build/BlackHoleWallpaper.app "$STAGE/"
 cp -R "build/Schwarzes Loch.saver" "$STAGE/"
@@ -54,3 +54,5 @@ rm -rf "$STAGE"
 shasum -a 256 "$DMG" | awk '{print $1}' > "$DMG.sha256"
 shasum -a 256 "$DMG"
 echo "$DMG.sha256"
+# Ed25519 signature of name and hash with the key from the keychain. The app installs no update without it.
+swift scripts/update-signing.swift sign "$DMG"

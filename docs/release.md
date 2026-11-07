@@ -128,11 +128,16 @@ gh repo edit DigitalIQ/blackhole-wallpaper \
 
 ## 6. Create the release
 
+Every release needs `BlackHoleWallpaper-<version>.dmg.sha256.sig`. `scripts/make-dmg.sh` writes it with the Ed25519 key from the login keychain (`swift scripts/update-signing.swift sign`). The app downloads no update without a valid signature, so a release without the file cannot be installed from inside the app.
+
+The key: `swift scripts/update-signing.swift generate` made it once, on 2026-11-08. Its public half is `UpdateCore.signingKeys` in `Updater.swift`. Keep a backup of the private key in a password manager (`swift scripts/update-signing.swift export`); on a new Mac, `swift scripts/update-signing.swift import` puts it back. If it is lost, installed apps can no longer update themselves and users have to download the next version by hand. To change the key, ship one release with both public keys in `signingKeys`, then drop the old one.
+
 ```bash
 git tag -a v1.0.0 -m "Black Hole Wallpaper 1.0.0"
 git push https://github.com/DigitalIQ/blackhole-wallpaper.git v1.0.0
 
 gh release create v1.0.0 build/BlackHoleWallpaper-1.0.0.dmg build/BlackHoleWallpaper-1.0.0.dmg.sha256 \
+  build/BlackHoleWallpaper-1.0.0.dmg.sha256.sig \
   --repo DigitalIQ/blackhole-wallpaper \
   --title "Black Hole Wallpaper 1.0.0" \
   --notes-file docs/release-notes-1.0.0.md
