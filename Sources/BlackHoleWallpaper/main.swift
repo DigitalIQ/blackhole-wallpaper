@@ -6,7 +6,7 @@ let args = CommandLine.arguments
 let knownSwitches: Set<String> = [
     "--help", "--lang",
     "--settings-shot", "--welcome", "--tab", "--height", "--all-screens", "--locked-demo", "--objects-demo", "--ships-demo", "--exotics-demo",
-    "--selftest", "--settings-file", "--update-check", "--update-install",
+    "--selftest", "--selftest-memory", "--settings-file", "--update-check", "--update-install",
     "--snapshot", "--diff", "--tol", "--export-ship", "--import-check",
     "--add", "--arrival", "--bench", "--bench-ab", "--bench-geo", "--bench-passes", "--bottom", "--catalog", "--crop", "--debug",
     "--drop", "--dump-atlas", "--edgecheck", "--edges", "--event", "--hole", "--jet-stats", "--map", "--mem", "--motion", "--mouse",
@@ -52,6 +52,9 @@ if let i = args.firstIndex(of: "--settings-shot"), i + 1 < args.count {
                            lockedDemo: args.contains("--locked-demo"), objectsDemo: args.contains("--objects-demo"),
                            shipsDemo: args.contains("--ships-demo"), exoticsDemo: args.contains("--exotics-demo"),
                            height: CGFloat(height), lang: lang, welcome: args.contains("--welcome")))
+}
+if args.contains("--selftest-memory") {
+    exit(SelfTestMemory.run())
 }
 if args.contains("--selftest") {
     exit(SelfTest.run())

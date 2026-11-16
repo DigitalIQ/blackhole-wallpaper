@@ -191,6 +191,12 @@ final class BodyGPU {
 
     /// Vertex and index buffers of the ship meshes in use.
     private var meshBuffers: [String: (MTLBuffer, MTLBuffer, Int)] = [:]
+    /// Ressourcen werden beim nächsten Gebrauch neu aufgebaut; aktive Command Buffers halten sie weiter.
+    func releaseCachedResources() {
+        meshBuffers = [:]; envs = [:]; envOrder = []
+        modelTextures = [:]; shipTargets = [:]
+        surfaces = [:]; surfaceOrder = []
+    }
     private func buffers(_ m: ShipMesh) -> (MTLBuffer, MTLBuffer, Int)? {
         if let b = meshBuffers[m.key] { return b }
         let dev = GPU.shared.device

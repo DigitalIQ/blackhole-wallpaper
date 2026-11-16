@@ -104,6 +104,13 @@ final class GPU {
 
     /// A memoryless render target: lives in tile memory during one pass only, costs no memory.
     private var memoryless: [String: MTLTexture] = [:]
+    /// Nur Cache-Referenzen lösen. Laufende Renderer und Command Buffers behalten ihre Ressourcen.
+    func releaseCachedResources() {
+        baked = [:]; bakedOrder = []
+        atlases = [:]; atlasOrder = []
+        holeMapCache = [:]; holeMapOrder = []
+        memoryless = [:]
+    }
     func linearScratch(_ w: Int, _ h: Int) -> MTLTexture {
         let key = "\(w)x\(h)"
         if let t = memoryless[key] { return t }
@@ -401,6 +408,19 @@ final class Renderer: NSObject, MTKViewDelegate {
 
     /// After a stop: the next frame does not count the stretch in between as elapsed time.
     func resumeClock() { lastTick = 0; lastEdgeTick = 0 }
+
+    /// Nur zwischen Frames auf dem Main Thread aufrufen. Das präsentierte Bild bleibt erhalten.
+    func releaseIdleResources() {
+        maps = []; mapSize = (0, 0); box = []; boxRect = SIMD4(-1, -1, -1, -1)
+        lensMaps = [[], []]; lensMaskKey = []
+        atlas = nil; edgeAtlas = nil; atlasCache.drawn = [:]; edgeCache.drawn = [:]
+        galaxyTex = nil; skyMask = nil; maskFor = []; maskDirty = true
+        diskTex = nil; nebulaTex = nil; nebFrame = nil
+        frameInstances = nil; lightTex = nil; lightSize = (0, 0)
+        refineTex = nil; refineKey = []
+        mapDirty = true; diskDirty = true; nebulaDirty = true
+        lastGeo = 0; lastNebFrame = -1; lastLight = -1
+    }
 
     /// Frames the main views started, for the BH_DEBUG log: zero while paused.
     static var framesDrawn = 0

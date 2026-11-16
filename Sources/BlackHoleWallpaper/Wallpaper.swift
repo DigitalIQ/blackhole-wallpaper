@@ -25,6 +25,34 @@ final class Wallpaper {
     private(set) var suspended = false
     /// A change arrived while suspended and the held picture does not show it yet.
     private var missedRedraw = false
+    private var idleRelease: Timer?
+    private var idleResourcesReleased = false
+    var isRendering: Bool { !suspended && (running || edgesOnly) }
+
+    private func updateIdleRelease() {
+        if isRendering {
+            idleRelease?.invalidate(); idleRelease = nil
+            idleResourcesReleased = false
+        } else if idleRelease == nil && !idleResourcesReleased {
+            idleRelease = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { [weak self] _ in
+                guard let self else { return }
+                self.idleRelease = nil
+                guard !self.isRendering else { return }
+                self.releaseIdleResources()
+                GPU.shared.releaseCachedResources()
+                BodyGPU.shared.releaseCachedResources()
+            }
+        }
+    }
+
+    func releaseIdleResources() {
+        guard !isRendering else { return }
+        renderer.releaseIdleResources()
+        for s in strips { s.releaseIdleResources() }
+        idleResourcesReleased = true
+        missedRedraw = true
+        if Renderer.debugLog { NSLog("Grafik-Caches nach Pause freigegeben") }
+    }
 
     init(screen: NSScreen, look: Look, config: ScreenConfig) {
         self.screen = screen
@@ -59,7 +87,15 @@ final class Wallpaper {
         // Render at point resolution: Retina pixels cost power and the scene is soft anyway.
         view.drawableSize = screen.frame.size
         renderer.pixelScale = 1
-        renderer.beforeDraw = { [weak self] in self?.updateMouse() }
+        renderer.beforeDraw = { [weak self] in
+            guard let self else { return }
+            self.updateMouse()
+            if !self.isRendering {
+                self.idleResourcesReleased = false
+                self.idleRelease?.invalidate(); self.idleRelease = nil
+                self.updateIdleRelease()
+            }
+        }
 
         observer = NotificationCenter.default.addObserver(
             forName: NSWindow.didChangeOcclusionStateNotification, object: window, queue: .main
@@ -72,10 +108,12 @@ final class Wallpaper {
     }
 
     deinit {
+        idleRelease?.invalidate()
         if let observer { NotificationCenter.default.removeObserver(observer) }
     }
 
     func close() {
+        idleRelease?.invalidate(); idleRelease = nil
         mouseTimer?.invalidate()
         for s in strips { s.view.isPaused = true }
         view.isPaused = true
@@ -125,7 +163,13 @@ final class Wallpaper {
         renderer.mouse = .zero
         renderer.stillMode = true
         renderer.edgeObjectsInStrips = false
-        defer { renderer.mouse = saved; renderer.stillMode = false; renderer.edgeObjectsInStrips = savedStrips }
+        defer {
+            renderer.mouse = saved; renderer.stillMode = false; renderer.edgeObjectsInStrips = savedStrips
+            if !isRendering {
+                idleResourcesReleased = false
+                updateIdleRelease()
+            }
+        }
         return Snapshot.render(renderer, width: Int(view.drawableSize.width), height: Int(view.drawableSize.height))
     }
 
@@ -149,12 +193,11 @@ final class Wallpaper {
         }
     }
 
-    /// Stops every view without touching the picture or any renderer state, and starts the same
-    /// views again later. Nothing is redone on the way back: the ray maps stay, the first frame
-    /// is an ordinary one, and the clock does not jump (the renderer drops the time of a paused stretch).
+    /// Das präsentierte Bild bleibt stehen. Nach längeren Pausen werden die Grafik-Caches neu aufgebaut.
     func setSuspended(_ on: Bool) {
         guard on != suspended else { return }
         suspended = on
+        defer { updateIdleRelease() }
         if on {
             view.isPaused = true
             for s in strips { s.view.isPaused = true }
@@ -199,6 +242,7 @@ final class Wallpaper {
         mouseTimer = nil
         updateMouseTimer()
         layoutStrips()
+        updateIdleRelease()
     }
 
     /// Places the strips over the rows the bands can reach; hides them outside edges-only mode.
@@ -239,6 +283,7 @@ final class Wallpaper {
 final class BandStrip: NSObject, MTKViewDelegate {
     let view: MTKView
     private let cache = EdgeStrip()
+    func releaseIdleResources() { cache.base = nil }
     private weak var renderer: Renderer?
     var rows = (0, 0)
     var screenSize = (0, 0)

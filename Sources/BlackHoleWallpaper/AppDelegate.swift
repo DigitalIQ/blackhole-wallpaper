@@ -29,6 +29,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var testReduceMotion: Bool?
     private var debugTimer: Timer?
     private var lastPlan: RunPlan?
+    private var memoryPressure: DispatchSourceMemoryPressure?
+    private var lastMemoryTrim = -Double.infinity
+
+    private func trimGraphicsMemory() {
+        let now = ProcessInfo.processInfo.systemUptime
+        guard now - lastMemoryTrim >= 30 else { return }
+        lastMemoryTrim = now
+        for w in wallpapers where !w.isRendering { w.releaseIdleResources() }
+        GPU.shared.releaseCachedResources()
+        BodyGPU.shared.releaseCachedResources()
+        if Renderer.debugLog { NSLog("Grafik-Caches bei Speicherdruck freigegeben") }
+    }
 
     static let testNote = Notification.Name("io.github.digitaliq.blackholewallpaper.test")
 
@@ -71,6 +83,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             .sink { [weak self] _ in self?.scheduleApply() }
             .store(in: &cancellables)
         setUpTestHooks()
+        let pressure = DispatchSource.makeMemoryPressureSource(eventMask: [.warning, .critical], queue: .main)
+        pressure.setEventHandler { [weak self] in self?.trimGraphicsMemory() }
+        pressure.resume()
+        memoryPressure = pressure
         // The Dock can move between screens without a screen-parameter notification.
         layoutTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
             guard let self else { return }
@@ -237,6 +253,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DistributedNotificationCenter.default().addObserver(forName: AppDelegate.testNote, object: nil, queue: .main) { [weak self] n in
             guard let self, let cmd = n.object as? String else { return }
             switch cmd {
+            case "memory:warning": self.trimGraphicsMemory()
             case "lock": self.watch.set(.screenLocked, true)
             case "unlock": self.watch.set(.screenLocked, false)
             case "heat:off": self.testHeat = nil

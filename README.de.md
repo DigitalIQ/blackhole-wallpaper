@@ -248,6 +248,12 @@ Bildrate zum Testen festnageln: `defaults write io.github.digitaliq.blackholewal
 
 ## Aufbau
 
+### Grafikspeicher
+
+Bei Speicherdruck gibt die App gemeinsam genutzte Grafik-Caches frei, höchstens einmal in 30 Sekunden. Nach 60 Sekunden ohne Animation gibt sie zusätzlich die Renderdaten des pausierten Schirms frei. Das angezeigte Bild bleibt stehen; beim Fortsetzen werden die benötigten Ressourcen neu aufgebaut. Aktive GPU-Befehle behalten ihre Ressourcen bis zum Abschluss. Einstellungen und importierte Modelle bleiben erhalten.
+
+`--selftest-memory` rendert alle sieben Werksvoreinstellungen, prüft pixelgleiche Bilder nach Cache-Freigabe und Wiederaufnahme und misst die GPU-Zuweisungen. Ein Testlauf mit `BH_SETTINGS` akzeptiert außerdem die vorhandene Test-Notification mit `memory:warning`, ohne echten systemweiten Speicherdruck zu erzeugen.
+
 - `Shaders.swift`: Metal-Code. `geoFrag` verfolgt die Strahlen einmal pro Ansicht, `geoFragJet` sammelt dabei zusätzlich das Licht des Jets und speichert das Ergebnis in Texturen: einmal in halber Auflösung für den ganzen Schirm und einmal in voller Auflösung für ein Quadrat um das Loch, wo die scharfen Kanten sind. `bakeDisk` backt das Gasmuster der Scheibe. `dispFrag` läuft jedes Bild und animiert nur noch. `edgeFrag` zeichnet bei „Nur Ränder“ nur die Streifen an den Bändern.
 - `Renderer.swift`: Metal-Pipelines und Texturen pro Bildschirm.
 - `Wallpaper.swift`: ein Fenster pro Bildschirm auf Schreibtisch-Ebene, dazu die zwei Streifen-Ansichten für „Nur Ränder“.
